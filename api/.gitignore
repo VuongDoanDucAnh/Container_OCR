@@ -1,0 +1,8 @@
+bin/
+obj/
+*.user
+.vs/
+appsettings.Development.json
+appsettings.Local.json
+**/service-account*.json
+**/*.pfx
