@@ -1,0 +1,15 @@
+[
+  {
+    "Name": "New Profile",
+    "Projects": [
+      {
+        "Path": "App_OCR\\App_OCR.csproj",
+        "Action": "Start"
+      },
+      {
+        "Path": "api\\DoAnOlympics.Api.csproj",
+        "Action": "Start"
+      }
+    ]
+  }
+]

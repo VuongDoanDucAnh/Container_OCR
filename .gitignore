@@ -14,5 +14,8 @@ keys/
 **/*.json.key
 **/service-account*.json
 
+App_OCR/bin/
+App_OCR/obj/
+
 .vs/
 *.suo

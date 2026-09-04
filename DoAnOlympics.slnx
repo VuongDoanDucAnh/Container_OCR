@@ -1,5 +1,6 @@
 <Solution>
   <Folder Name="/api/">
-    <Project Path="api/DoAnOlympics.Api.csproj" />
+    <Project Path="F:/DucAnh's Folder/DoAn_Olympics/api/DoAnOlympics.Api.csproj" />
   </Folder>
+  <Project Path="F:/DucAnh's Folder/DoAn_Olympics/App_OCR/App_OCR.csproj" Id="0ed6e2c5-659b-40a2-b7df-c8d8ee4404a0" />
 </Solution>
