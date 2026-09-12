@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App_OCR.ScanPage"
+             BackgroundColor="{StaticResource JadeSoft}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30,20" Spacing="15">
+
+            <Label Text="Quét mã container" FontSize="22"
+                   TextColor="{StaticResource JadeDark}" HorizontalOptions="Center" />
+
+            <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource JadeLight}"
+                    StrokeThickness="1" HeightRequest="250" BackgroundColor="White" Padding="0">
+                <Image x:Name="ImgPreview" Aspect="AspectFit" />
+            </Border>
+
+            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
+                <Button x:Name="BtnChupAnh" Text="Chụp ảnh"
+                        BackgroundColor="{StaticResource JadePrimary}" TextColor="White"
+                        Clicked="BtnChupAnh_Clicked" />
+                <Button x:Name="BtnChonThuVien" Text="Chọn từ thư viện"
+                        BackgroundColor="{StaticResource JadeLight}" TextColor="White"
+                        Clicked="BtnChonThuVien_Clicked" />
+            </HorizontalStackLayout>
+
+            <Button x:Name="BtnGui" Text="Gửi" IsEnabled="False"
+                    BackgroundColor="{StaticResource JadeDark}" TextColor="White"
+                    Clicked="BtnGui_Clicked" />
+
+            <Label x:Name="LblKetQua" Text="" HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

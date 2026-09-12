@@ -1,6 +1,7 @@
 ﻿api/bin/
 api/obj/
 api/*.user
+App_OCR/*.user
 
 ocr-worker/__pycache__/
 ocr-worker/*.pyc

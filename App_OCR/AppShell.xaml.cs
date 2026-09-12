@@ -1,10 +1,21 @@
-﻿namespace App_OCR
+﻿namespace App_OCR;
+
+public partial class AppShell : Shell
 {
-    public partial class AppShell : Shell
+    public AppShell()
     {
-        public AppShell()
+        InitializeComponent();
+    }
+
+    protected override async void OnAppearing()
+    {
+        base.OnAppearing();
+
+        var token = await SecureStorage.Default.GetAsync("jwt_token");
+
+        if (string.IsNullOrEmpty(token))
         {
-            InitializeComponent();
+            await Navigation.PushModalAsync(new MainPage());
         }
     }
 }

@@ -38,6 +38,7 @@ public partial class MainPage : ContentPage
                     await SecureStorage.Default.SetAsync("jwt_token", result.Token);
                     LblResult.TextColor = Colors.Green;
                     LblResult.Text = "Đăng nhập thành công";
+                    await Navigation.PushAsync(new ScanPage());
                 }
                 else
                 {

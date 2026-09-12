@@ -10,7 +10,7 @@
         VerticalOptions="Center">
 
             <Label
-            Text="Đăng nhập tài xế"
+            Text="Đăng nhập"
             FontSize="24"
             HorizontalOptions="Center" />
 

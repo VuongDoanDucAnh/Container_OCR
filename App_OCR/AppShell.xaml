@@ -1,14 +1,31 @@
-<?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="utf-8" ?>
 <Shell
     x:Class="App_OCR.AppShell"
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:App_OCR"
-    Title="App_OCR">
+    Shell.FlyoutBehavior="Disabled"
+    Shell.TabBarBackgroundColor="{StaticResource JadePrimary}"
+    Shell.TabBarTitleColor="White"
+    Shell.TabBarUnselectedColor="{StaticResource JadeSoft}"
+    Shell.TabBarForegroundColor="White">
 
-    <ShellContent
-        Title="Home"
-        ContentTemplate="{DataTemplate local:MainPage}"
-        Route="MainPage" />
+    <TabBar>
+        <Tab Title="Trang chủ" Route="trangchu">
+            <ShellContent ContentTemplate="{DataTemplate local:TrangChuPage}" />
+        </Tab>
+        <Tab Title="Lịch sử" Route="lichsu">
+            <ShellContent ContentTemplate="{DataTemplate local:LichSuPage}" />
+        </Tab>
+        <Tab Title="Chụp hình" Route="scan">
+            <ShellContent ContentTemplate="{DataTemplate local:ScanPage}" />
+        </Tab>
+        <Tab Title="Thông báo" Route="thongbao">
+            <ShellContent ContentTemplate="{DataTemplate local:ThongBaoPage}" />
+        </Tab>
+        <Tab Title="Cá nhân" Route="canhan">
+            <ShellContent ContentTemplate="{DataTemplate local:CaNhanPage}" />
+        </Tab>
+    </TabBar>
 
 </Shell>

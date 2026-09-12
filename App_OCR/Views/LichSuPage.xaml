@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App_OCR.LichSuPage"
+             BackgroundColor="{StaticResource JadeSoft}">
+
+    <Grid Padding="20" RowDefinitions="Auto,*">
+
+        <Label Grid.Row="0" Text="Lịch sử quét" FontSize="22"
+               TextColor="{StaticResource JadeDark}" Margin="0,0,0,15" />
+
+        <RefreshView Grid.Row="1" x:Name="RvLichSu" Refreshing="RvLichSu_Refreshing">
+            <CollectionView x:Name="CvLichSu">
+                <CollectionView.EmptyView>
+                    <Label x:Name="LblTrangThai" Text="Chưa có dữ liệu"
+                           HorizontalOptions="Center" Margin="0,40,0,0" />
+                </CollectionView.EmptyView>
+                <CollectionView.ItemTemplate>
+                    <DataTemplate>
+                        <Border StrokeShape="RoundRectangle 8" Margin="0,5" Padding="15" BackgroundColor="White">
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding MaContainer}" FontSize="18" FontAttributes="Bold"
+                                       TextColor="{StaticResource JadePrimary}" />
+                                <Label Text="{Binding ThoiGianQuet, StringFormat='{0:dd/MM/yyyy HH:mm}'}"
+                                       FontSize="13" TextColor="{StaticResource Gray500}" />
+                            </VerticalStackLayout>
+                        </Border>
+                    </DataTemplate>
+                </CollectionView.ItemTemplate>
+            </CollectionView>
+        </RefreshView>
+
+    </Grid>
+
+</ContentPage>
