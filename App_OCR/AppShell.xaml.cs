@@ -15,7 +15,7 @@ public partial class AppShell : Shell
 
         if (string.IsNullOrEmpty(token))
         {
-            await Navigation.PushModalAsync(new MainPage());
+            await Navigation.PushModalAsync(new NavigationPage(new MainPage()));
         }
     }
 }

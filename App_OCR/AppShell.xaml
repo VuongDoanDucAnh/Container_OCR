@@ -11,19 +11,19 @@
     Shell.TabBarForegroundColor="White">
 
     <TabBar>
-        <Tab Title="Trang chủ" Route="trangchu">
+        <Tab Title="🏠 Trang chủ" Route="trangchu">
             <ShellContent ContentTemplate="{DataTemplate local:TrangChuPage}" />
         </Tab>
-        <Tab Title="Lịch sử" Route="lichsu">
+        <Tab Title="📋 Lịch sử" Route="lichsu">
             <ShellContent ContentTemplate="{DataTemplate local:LichSuPage}" />
         </Tab>
-        <Tab Title="Chụp hình" Route="scan">
+        <Tab Title="📷 Chụp hình" Route="scan">
             <ShellContent ContentTemplate="{DataTemplate local:ScanPage}" />
         </Tab>
-        <Tab Title="Thông báo" Route="thongbao">
+        <Tab Title="🔔 Thông báo" Route="thongbao">
             <ShellContent ContentTemplate="{DataTemplate local:ThongBaoPage}" />
         </Tab>
-        <Tab Title="Cá nhân" Route="canhan">
+        <Tab Title="👤 Cá nhân" Route="canhan">
             <ShellContent ContentTemplate="{DataTemplate local:CaNhanPage}" />
         </Tab>
     </TabBar>

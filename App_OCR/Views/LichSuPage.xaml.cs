@@ -16,17 +16,23 @@ public partial class LichSuPage : ContentPage
     protected override async void OnAppearing()
     {
         base.OnAppearing();
-        await TaiDuLieuAsync();
+        await TaiDuLieuAsync(hienSpinnerToanTrang: true);
     }
 
     private async void RvLichSu_Refreshing(object sender, EventArgs e)
     {
-        await TaiDuLieuAsync();
+        await TaiDuLieuAsync(hienSpinnerToanTrang: false);
         RvLichSu.IsRefreshing = false;
     }
 
-    private async Task TaiDuLieuAsync()
+    private async Task TaiDuLieuAsync(bool hienSpinnerToanTrang)
     {
+        if (hienSpinnerToanTrang)
+        {
+            LoadingLichSu.IsVisible = true;
+            LoadingLichSu.IsRunning = true;
+        }
+
         try
         {
             var token = await SecureStorage.Default.GetAsync("jwt_token");
@@ -49,6 +55,11 @@ public partial class LichSuPage : ContentPage
         catch (Exception ex)
         {
             LblTrangThai.Text = $"Lỗi kết nối: {ex.Message}";
+        }
+        finally
+        {
+            LoadingLichSu.IsVisible = false;
+            LoadingLichSu.IsRunning = false;
         }
     }
 }

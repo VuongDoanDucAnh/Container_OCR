@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App_OCR.RegisterPage"
+             BackgroundColor="{StaticResource JadeSoft}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="30,0" Spacing="15" VerticalOptions="Center">
+
+            <Label Text="Đăng ký tài xế" FontSize="24"
+                   TextColor="{StaticResource JadeDark}" HorizontalOptions="Center" />
+
+            <Entry x:Name="EntryMaTaiXe" Placeholder="Mã tài xế" />
+            <Entry x:Name="EntryHoTen" Placeholder="Họ tên" />
+            <Entry x:Name="EntryUsername" Placeholder="Username" />
+            <Entry x:Name="EntryPassword" Placeholder="Password" IsPassword="True" />
+
+            <Button x:Name="BtnDangKy" Text="Đăng ký"
+                    BackgroundColor="{StaticResource JadePrimary}" TextColor="White"
+                    Clicked="BtnDangKy_Clicked" />
+
+            <ActivityIndicator x:Name="LoadingDangKy" IsRunning="False" IsVisible="False"
+                                Color="{StaticResource JadePrimary}" />
+
+            <Label x:Name="LblKetQua" Text="" TextColor="Red" HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

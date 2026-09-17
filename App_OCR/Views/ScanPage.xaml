@@ -24,9 +24,16 @@
                         Clicked="BtnChonThuVien_Clicked" />
             </HorizontalStackLayout>
 
+            <Button x:Name="BtnChupLai" Text="Chụp lại"
+                    BackgroundColor="{StaticResource Gray400}" TextColor="White"
+                    IsVisible="False" Clicked="BtnChupLai_Clicked" />
+
             <Button x:Name="BtnGui" Text="Gửi" IsEnabled="False"
                     BackgroundColor="{StaticResource JadeDark}" TextColor="White"
                     Clicked="BtnGui_Clicked" />
+
+            <ActivityIndicator x:Name="LoadingScan" IsRunning="False" IsVisible="False"
+                                Color="{StaticResource JadePrimary}" />
 
             <Label x:Name="LblKetQua" Text="" HorizontalOptions="Center" />
 

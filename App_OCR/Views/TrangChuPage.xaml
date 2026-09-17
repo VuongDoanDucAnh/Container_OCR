@@ -4,7 +4,7 @@
              x:Class="App_OCR.TrangChuPage">
 
     <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
-        <Label Text="Trang chủ - Đang phát triển" FontSize="18" />
+        <Label Text="Trang chủ" FontSize="18" />
     </VerticalStackLayout>
 
 </ContentPage>

@@ -24,6 +24,11 @@ public partial class MainPage : ContentPage
             Password = password
         };
 
+        BtnLogin.IsEnabled = false;
+        LoadingLogin.IsVisible = true;
+        LoadingLogin.IsRunning = true;
+        LblResult.Text = "";
+
         try
         {
             var response = await _httpClient.PostAsJsonAsync(
@@ -38,7 +43,7 @@ public partial class MainPage : ContentPage
                     await SecureStorage.Default.SetAsync("jwt_token", result.Token);
                     LblResult.TextColor = Colors.Green;
                     LblResult.Text = "Đăng nhập thành công";
-                    await Navigation.PushAsync(new ScanPage());
+                    await Navigation.PopModalAsync();
                 }
                 else
                 {
@@ -57,6 +62,16 @@ public partial class MainPage : ContentPage
             LblResult.TextColor = Colors.Red;
             LblResult.Text = $"Lỗi kết nối: {ex.Message}";
         }
+        finally
+        {
+            BtnLogin.IsEnabled = true;
+            LoadingLogin.IsVisible = false;
+            LoadingLogin.IsRunning = false;
+        }
+    }
+    private async void LblDangKy_Tapped(object sender, EventArgs e)
+    {
+        await Navigation.PushModalAsync(new RegisterPage());
     }
 }
 

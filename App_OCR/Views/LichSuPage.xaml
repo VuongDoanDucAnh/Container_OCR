@@ -4,12 +4,15 @@
              x:Class="App_OCR.LichSuPage"
              BackgroundColor="{StaticResource JadeSoft}">
 
-    <Grid Padding="20" RowDefinitions="Auto,*">
+    <Grid Padding="20" RowDefinitions="Auto,Auto,*">
 
         <Label Grid.Row="0" Text="Lịch sử quét" FontSize="22"
                TextColor="{StaticResource JadeDark}" Margin="0,0,0,15" />
 
-        <RefreshView Grid.Row="1" x:Name="RvLichSu" Refreshing="RvLichSu_Refreshing">
+        <ActivityIndicator Grid.Row="1" x:Name="LoadingLichSu" IsRunning="False" IsVisible="False"
+                            Color="{StaticResource JadePrimary}" Margin="0,0,0,10" />
+
+        <RefreshView Grid.Row="2" x:Name="RvLichSu" Refreshing="RvLichSu_Refreshing">
             <CollectionView x:Name="CvLichSu">
                 <CollectionView.EmptyView>
                     <Label x:Name="LblTrangThai" Text="Chưa có dữ liệu"

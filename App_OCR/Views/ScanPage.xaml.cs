@@ -39,10 +39,24 @@ public partial class ScanPage : ContentPage
 
         _anhDaChon = ketQua;
 
-        using var luongDoc = await ketQua.OpenReadAsync();
-        ImgPreview.Source = ImageSource.FromStream(() => luongDoc);
+        using var luongGoc = await ketQua.OpenReadAsync();
+        var boNhoAnh = new MemoryStream();
+        await luongGoc.CopyToAsync(boNhoAnh);
+        boNhoAnh.Position = 0;
+
+        ImgPreview.Source = ImageSource.FromStream(() => boNhoAnh);
 
         BtnGui.IsEnabled = true;
+        BtnChupLai.IsVisible = true;
+        LblKetQua.Text = "";
+    }
+
+    private void BtnChupLai_Clicked(object sender, EventArgs e)
+    {
+        _anhDaChon = null;
+        ImgPreview.Source = null;
+        BtnGui.IsEnabled = false;
+        BtnChupLai.IsVisible = false;
         LblKetQua.Text = "";
     }
 
@@ -51,6 +65,11 @@ public partial class ScanPage : ContentPage
         if (_anhDaChon is null) return;
 
         BtnGui.IsEnabled = false;
+        BtnChupAnh.IsEnabled = false;
+        BtnChonThuVien.IsEnabled = false;
+        BtnChupLai.IsEnabled = false;
+        LoadingScan.IsVisible = true;
+        LoadingScan.IsRunning = true;
         LblKetQua.Text = "Đang gửi...";
 
         try
@@ -79,6 +98,7 @@ public partial class ScanPage : ContentPage
 
                 _anhDaChon = null;
                 ImgPreview.Source = null;
+                BtnChupLai.IsVisible = false;
 
                 await Task.Delay(1000);
                 await Shell.Current.GoToAsync("//lichsu");
@@ -87,14 +107,21 @@ public partial class ScanPage : ContentPage
             {
                 LblKetQua.TextColor = Colors.Red;
                 LblKetQua.Text = ketQuaJson?.HuongGiaiQuyet ?? $"Lỗi: {phanHoi.StatusCode}";
-                BtnGui.IsEnabled = true;
             }
         }
         catch (Exception ex)
         {
             LblKetQua.TextColor = Colors.Red;
             LblKetQua.Text = $"Lỗi kết nối: {ex.Message}";
-            BtnGui.IsEnabled = true;
+        }
+        finally
+        {
+            BtnChupAnh.IsEnabled = true;
+            BtnChonThuVien.IsEnabled = true;
+            BtnChupLai.IsEnabled = true;
+            BtnGui.IsEnabled = _anhDaChon is not null;
+            LoadingScan.IsVisible = false;
+            LoadingScan.IsRunning = false;
         }
     }
 }
