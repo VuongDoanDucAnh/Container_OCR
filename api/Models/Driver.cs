@@ -10,6 +10,7 @@ public class Driver
     public string HoTen { get; set; } = string.Empty;
     public string Username { get; set; } = string.Empty;
     public string PasswordHash { get; set; } = string.Empty;
+    public string? SoDienThoai { get; set; }
     public DateTime NgayTao { get; set; } = DateTime.UtcNow;
 
     public ICollection<ContainerRecord> ContainerRecords { get; set; } = new List<ContainerRecord>();
