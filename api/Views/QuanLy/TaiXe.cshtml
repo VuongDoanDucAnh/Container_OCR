@@ -1,0 +1,69 @@
+﻿@model TaiXeViewModel
+@{
+    ViewData["Trang"] = "taixe";
+    ViewData["TieuDe"] = "Tài xế";
+    var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Tài xế</h1>
+        <p class="phu">@Model.TaiXes.Count tài xế · chuyến chạy ngày @Model.Ngay.ToString("dd/MM/yyyy", vn)</p>
+    </div>
+</div>
+
+<div class="khung">
+    @if (Model.TaiXes.Count == 0)
+    {
+        <p class="rong">Chưa có tài xế nào đăng ký.</p>
+    }
+    else
+    {
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Mã tài xế</th>
+                        <th>Họ tên</th>
+                        <th>Trạng thái hôm nay</th>
+                        <th>Chuyến hôm nay</th>
+                        <th>Quét hôm nay</th>
+                        <th>Tổng đã quét</th>
+                        <th>Ngày đăng ký</th>
+                        <th>Liên hệ</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.TaiXes)
+                    {
+                        <tr>
+                            <td><strong>@t.MaTaiXe</strong></td>
+                            <td>@t.HoTen</td>
+                            <td><span class="huy-hieu @t.LopCss">@t.TrangThaiTongHop</span></td>
+                            <td>
+                                @if (t.Chuyens.Count == 0)
+                                {
+                                    <span class="nho">-</span>
+                                }
+                                else
+                                {
+                                    foreach (var c in t.Chuyens)
+                                    {
+                                        <div class="dong-chuyen">
+                                            <div>@c.MaDon · @c.TenTuyen</div>
+                                            <span class="huy-hieu @NhanHienThi.LopCss(c.TrangThai)">@NhanHienThi.TrangThai(c.TrangThai)</span>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                            <td>@t.QuetHomNay</td>
+                            <td>@t.TongContainerDaQuet</td>
+                            <td>@t.NgayTao.ToLocalTime().ToString("dd/MM/yyyy")</td>
+                            <td><a class="nut-phu" href="/quanly/thong-bao?taiXeId=@t.Id">Nhắn tin</a></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

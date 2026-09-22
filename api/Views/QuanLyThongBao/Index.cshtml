@@ -1,0 +1,353 @@
+﻿@{
+    ViewData["Trang"] = "thongbao";
+    ViewData["TieuDe"] = "Thông báo";
+    var taiXeBanDau = ViewData["TaiXeBanDau"] as int?;
+}
+
+<style>
+    .hop-chat { display: flex; gap: 16px; height: calc(100vh - 170px); min-height: 440px; }
+    .cot-danh-sach {
+        width: 320px;
+        flex-shrink: 0;
+        overflow-y: auto;
+        padding: 8px;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .muc-hoi-thoai { margin-bottom: 4px; padding: 10px 12px; border-radius: 8px; cursor: pointer; }
+    .muc-hoi-thoai:hover { background: var(--jade-nhat); }
+    .muc-hoi-thoai.dang-mo { background: var(--jade-nhat); border-left: 4px solid var(--jade); }
+    .muc-ten { display: flex; align-items: center; flex-wrap: wrap; gap: 6px; font-size: 14px; font-weight: 600; }
+    .muc-xem-truoc {
+        margin-top: 3px;
+        overflow: hidden;
+        color: var(--chu-phu);
+        font-size: 13px;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    .dem-chua-doc {
+        min-width: 20px;
+        padding: 1px 7px;
+        border-radius: 999px;
+        background: #c62828;
+        color: #fff;
+        font-size: 12px;
+        text-align: center;
+    }
+    .nhan-canh-bao { padding: 1px 8px; border-radius: 999px; background: #ffebee; color: #c62828; font-size: 12px; }
+    .cot-chat {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-width: 0;
+        overflow: hidden;
+        border-radius: 12px;
+        background: #fff;
+        box-shadow: 0 1px 3px rgba(0, 0, 0, 0.06);
+    }
+    .chat-dau { padding: 14px 18px; border-bottom: 1px solid var(--vien); color: var(--jade-dam); font-weight: 600; }
+    .chat-tin {
+        display: flex;
+        flex-direction: column;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding: 16px 18px;
+        background: #f7fafa;
+    }
+    .tin { max-width: 70%; margin-bottom: 10px; padding: 9px 12px; border-radius: 12px; font-size: 14px; }
+    .tin-tai-xe { align-self: flex-start; border: 1px solid var(--vien); background: #fff; }
+    .tin-quan-ly { align-self: flex-end; background: var(--jade); color: #fff; }
+    .tin-noi-dung { white-space: pre-wrap; word-wrap: break-word; }
+    .tin-gio { margin-top: 4px; font-size: 11px; opacity: 0.7; }
+    .nhan-su-co { margin-bottom: 4px; color: #c62828; font-size: 12px; font-weight: 700; }
+    .chat-nhap { display: flex; gap: 8px; padding: 12px; border-top: 1px solid var(--vien); }
+    .chat-nhap.an { display: none; }
+    .chat-nhap textarea {
+        flex: 1;
+        resize: none;
+        padding: 9px 10px;
+        border: 1px solid #b0bec5;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 14px;
+    }
+    .chat-nhap button {
+        padding: 0 20px;
+        border: 0;
+        border-radius: 8px;
+        background: var(--jade);
+        color: #fff;
+        font-weight: 600;
+        cursor: pointer;
+    }
+    .chat-nhap button:disabled { opacity: 0.6; cursor: default; }
+</style>
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Thông báo &amp; trao đổi với tài xế</h1>
+        <p class="phu">Tin nhắn và báo sự cố từ app tài xế, tự cập nhật mỗi 5 giây.</p>
+    </div>
+</div>
+
+<div class="hop-chat">
+    <div class="cot-danh-sach" id="danh-sach"></div>
+    <div class="cot-chat">
+        <div class="chat-dau" id="chat-dau">Chọn một tài xế để xem trao đổi</div>
+        <div class="chat-tin" id="khung-tin"></div>
+        <div class="chat-nhap an" id="khung-nhap">
+            <textarea id="o-nhap" rows="2" maxlength="1000" placeholder="Nhập tin nhắn (Enter để gửi, Shift+Enter xuống dòng)"></textarea>
+            <button type="button" id="nut-gui">Gửi</button>
+        </div>
+    </div>
+</div>
+
+<script>
+    (function () {
+        const nhanSuCo = {
+            XE_HONG: 'Xe hỏng',
+            KET_XE: 'Kẹt xe',
+            SAI_THUNG: 'Sai thùng container',
+            TAI_NAN: 'Tai nạn',
+            KHAC: 'Sự cố khác'
+        };
+
+        const danhSachEl = document.getElementById('danh-sach');
+        const chatDauEl = document.getElementById('chat-dau');
+        const khungTinEl = document.getElementById('khung-tin');
+        const khungNhapEl = document.getElementById('khung-nhap');
+        const oNhapEl = document.getElementById('o-nhap');
+        const nutGuiEl = document.getElementById('nut-gui');
+
+        let taiXeDangMo = @(taiXeBanDau?.ToString() ?? "null");
+        let tenDangMo = '';
+        let sauId = 0;
+        let dangTaiTin = false;
+        let danhSachHienTai = [];
+
+        function dinhDangGio(iso) {
+            return new Date(iso).toLocaleString('vi-VN', {
+                hour: '2-digit',
+                minute: '2-digit',
+                day: '2-digit',
+                month: '2-digit'
+            });
+        }
+
+        async function layJson(url) {
+            const phanHoi = await fetch(url, { headers: { 'Accept': 'application/json' } });
+            if (phanHoi.redirected) {
+                window.location.href = '/quanly/dangnhap';
+                return null;
+            }
+            if (!phanHoi.ok) {
+                return null;
+            }
+            return await phanHoi.json();
+        }
+
+        function veDanhSach(ds) {
+            const viTriCuon = danhSachEl.scrollTop;
+            danhSachEl.textContent = '';
+
+            if (!ds || ds.length === 0) {
+                const trong = document.createElement('p');
+                trong.className = 'rong';
+                trong.textContent = 'Chưa có tài xế nào.';
+                danhSachEl.appendChild(trong);
+                return;
+            }
+
+            ds.forEach(function (d) {
+                const muc = document.createElement('div');
+                muc.className = 'muc-hoi-thoai' + (d.driverId === taiXeDangMo ? ' dang-mo' : '');
+
+                const dong1 = document.createElement('div');
+                dong1.className = 'muc-ten';
+
+                const ten = document.createElement('span');
+                ten.textContent = d.maTaiXe + ' - ' + d.hoTen;
+                dong1.appendChild(ten);
+
+                if (d.coSuCo) {
+                    const suCo = document.createElement('span');
+                    suCo.className = 'nhan-canh-bao';
+                    suCo.textContent = 'Sự cố';
+                    dong1.appendChild(suCo);
+                }
+
+                if (d.chuaDoc > 0) {
+                    const dem = document.createElement('span');
+                    dem.className = 'dem-chua-doc';
+                    dem.textContent = d.chuaDoc;
+                    dong1.appendChild(dem);
+                }
+
+                muc.appendChild(dong1);
+
+                const xemTruoc = document.createElement('div');
+                xemTruoc.className = 'muc-xem-truoc';
+                if (d.tinCuoi) {
+                    xemTruoc.textContent = (d.nguoiGuiCuoi === 'QuanLy' ? 'Bạn: ' : '') + d.tinCuoi;
+                } else {
+                    xemTruoc.textContent = 'Chưa có trao đổi';
+                }
+                muc.appendChild(xemTruoc);
+
+                muc.addEventListener('click', function () {
+                    moHoiThoai(d.driverId, d.maTaiXe + ' - ' + d.hoTen);
+                });
+
+                danhSachEl.appendChild(muc);
+            });
+
+            danhSachEl.scrollTop = viTriCuon;
+        }
+
+        async function taiDanhSach() {
+            const ds = await layJson('/quanly/thong-bao/danh-sach');
+            if (!ds) {
+                return;
+            }
+
+            danhSachHienTai = ds;
+
+            if (taiXeDangMo !== null && tenDangMo === '') {
+                const dau = ds.find(function (d) { return d.driverId === taiXeDangMo; });
+                if (dau) {
+                    moHoiThoai(dau.driverId, dau.maTaiXe + ' - ' + dau.hoTen);
+                    return;
+                }
+                taiXeDangMo = null;
+            }
+
+            veDanhSach(ds);
+        }
+
+        function themTin(t) {
+            const hop = document.createElement('div');
+            hop.className = 'tin ' + (t.nguoiGui === 'QuanLy' ? 'tin-quan-ly' : 'tin-tai-xe');
+
+            if (t.loaiSuCo) {
+                const nhan = document.createElement('div');
+                nhan.className = 'nhan-su-co';
+                nhan.textContent = 'Báo sự cố: ' + (nhanSuCo[t.loaiSuCo] || t.loaiSuCo);
+                hop.appendChild(nhan);
+            }
+
+            const noiDung = document.createElement('div');
+            noiDung.className = 'tin-noi-dung';
+            noiDung.textContent = t.noiDung;
+            hop.appendChild(noiDung);
+
+            const gio = document.createElement('div');
+            gio.className = 'tin-gio';
+            gio.textContent = dinhDangGio(t.thoiGian);
+            hop.appendChild(gio);
+
+            khungTinEl.appendChild(hop);
+        }
+
+        async function taiTin() {
+            if (taiXeDangMo === null || dangTaiTin) {
+                return;
+            }
+
+            dangTaiTin = true;
+            const id = taiXeDangMo;
+
+            try {
+                const tins = await layJson('/quanly/thong-bao/' + id + '/tin?sauId=' + sauId);
+                if (!tins || id !== taiXeDangMo || tins.length === 0) {
+                    return;
+                }
+
+                const lanDau = sauId === 0;
+                const ganDay = khungTinEl.scrollHeight - khungTinEl.scrollTop - khungTinEl.clientHeight < 80;
+
+                tins.forEach(function (t) {
+                    if (t.id > sauId) {
+                        themTin(t);
+                        sauId = t.id;
+                    }
+                });
+
+                if (lanDau || ganDay) {
+                    khungTinEl.scrollTop = khungTinEl.scrollHeight;
+                }
+            } finally {
+                dangTaiTin = false;
+            }
+        }
+
+        function moHoiThoai(id, ten) {
+            taiXeDangMo = id;
+            tenDangMo = ten;
+            sauId = 0;
+            dangTaiTin = false;
+            khungTinEl.textContent = '';
+            chatDauEl.textContent = 'Trao đổi với ' + ten;
+            khungNhapEl.classList.remove('an');
+            veDanhSach(danhSachHienTai);
+            oNhapEl.focus();
+            taiTin();
+        }
+
+        async function guiTin() {
+            if (taiXeDangMo === null) {
+                return;
+            }
+
+            const noiDung = oNhapEl.value.trim();
+            if (noiDung.length === 0) {
+                return;
+            }
+
+            nutGuiEl.disabled = true;
+
+            try {
+                const token = document.querySelector('input[name="__RequestVerificationToken"]').value;
+                const thanPhan = new URLSearchParams();
+                thanPhan.append('noiDung', noiDung);
+                thanPhan.append('__RequestVerificationToken', token);
+
+                const phanHoi = await fetch('/quanly/thong-bao/' + taiXeDangMo + '/gui', {
+                    method: 'POST',
+                    body: thanPhan
+                });
+
+                if (phanHoi.ok) {
+                    oNhapEl.value = '';
+                    await taiTin();
+                    await taiDanhSach();
+                } else {
+                    alert('Không gửi được tin nhắn. Vui lòng thử lại.');
+                }
+            } finally {
+                nutGuiEl.disabled = false;
+                oNhapEl.focus();
+            }
+        }
+
+        nutGuiEl.addEventListener('click', guiTin);
+        oNhapEl.addEventListener('keydown', function (e) {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                guiTin();
+            }
+        });
+
+        setInterval(function () {
+            if (document.hidden) {
+                return;
+            }
+            taiDanhSach();
+            taiTin();
+        }, 5000);
+
+        taiDanhSach();
+    })();
+</script>

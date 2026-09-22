@@ -1,0 +1,115 @@
+﻿@model DonVaTuyenViewModel
+@{
+    ViewData["Trang"] = "don";
+    ViewData["TieuDe"] = "Đơn hàng và tuyến";
+    var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+    var truoc = Model.Ngay.AddDays(-1).ToString("yyyy-MM-dd");
+    var sau = Model.Ngay.AddDays(1).ToString("yyyy-MM-dd");
+    var hienTai = Model.Ngay.ToString("yyyy-MM-dd");
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Đơn hàng &amp; tuyến đường</h1>
+        <p class="phu">@Model.Ngay.ToString("dddd, dd/MM/yyyy", vn) · @Model.Don.Count đơn</p>
+    </div>
+    <form method="get" action="/quanly/don-hang" class="bo-loc-ngay">
+        <a class="nut-phu" href="/quanly/don-hang?ngay=@truoc">‹ Hôm trước</a>
+        <input type="date" name="ngay" value="@hienTai" onchange="this.form.submit()" />
+        <a class="nut-phu" href="/quanly/don-hang?ngay=@sau">Hôm sau ›</a>
+        <a class="nut-phu" href="/quanly/don-hang">Hôm nay</a>
+    </form>
+</div>
+
+@if (Model.Don.Count == 0)
+{
+    <div class="khung">
+        <p class="rong">Không có đơn nào trong ngày này.</p>
+    </div>
+}
+else
+{
+    <div class="khung">
+        <div class="khung-dau">
+            <h2>Tổng hợp theo tuyến</h2>
+        </div>
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Tuyến</th>
+                        <th>Lộ trình</th>
+                        <th>Khoảng cách</th>
+                        <th>Số đơn</th>
+                        <th>Đang chạy</th>
+                        <th>Hoàn thành</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.TheoTuyen)
+                    {
+                        <tr>
+                            <td><strong>@t.TenTuyen</strong></td>
+                            <td>@t.DiemDi → @t.DiemDen</td>
+                            <td>@t.KhoangCachKm km</td>
+                            <td>@t.SoDon</td>
+                            <td>@t.SoDangChay</td>
+                            <td>@t.SoHoanThanh</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="khung">
+        <div class="khung-dau">
+            <h2>Danh sách đơn</h2>
+        </div>
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Tuyến</th>
+                        <th>Loại hàng</th>
+                        <th>Tài xế phụ trách</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Don)
+                    {
+                        <tr>
+                            <td><strong>@d.MaDon</strong></td>
+                            <td>@d.TenKhachHang</td>
+                            <td>
+                                <div>@d.TenTuyen</div>
+                                <div class="nho">@d.DiemDi → @d.DiemDen · @d.KhoangCachKm km</div>
+                            </td>
+                            <td>@d.LoaiHang</td>
+                            <td>
+                                @if (d.ChuaPhanCong)
+                                {
+                                    <span class="huy-hieu khong">Chưa phân công</span>
+                                }
+                                else
+                                {
+                                    foreach (var c in d.Chuyens)
+                                    {
+                                        <div class="dong-chuyen">
+                                            <div>@c.MaTaiXe - @c.HoTenTaiXe</div>
+                                            <span class="huy-hieu @NhanHienThi.LopCss(c.TrangThai)">@NhanHienThi.TrangThai(c.TrangThai)</span>
+                                        </div>
+                                    }
+                                }
+                            </td>
+                            <td>@(string.IsNullOrWhiteSpace(d.GhiChu) ? "-" : d.GhiChu)</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

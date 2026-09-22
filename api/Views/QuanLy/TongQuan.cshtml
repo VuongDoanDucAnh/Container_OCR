@@ -1,0 +1,153 @@
+@model TongQuanViewModel
+@{
+    ViewData["Trang"] = "tongquan";
+    ViewData["TieuDe"] = "Tổng quan";
+    var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Tổng quan hôm nay</h1>
+        <p class="phu">@Model.Ngay.ToString("dddd, dd/MM/yyyy", vn)</p>
+    </div>
+    <a class="nut-phu" href="/quanly/don-hang">Xem toàn bộ đơn</a>
+</div>
+
+<div class="luoi-the">
+    <div class="the-so">
+        <div class="nhan">Tổng số đơn</div>
+        <div class="so">@Model.TongDon</div>
+    </div>
+    <div class="the-so @(Model.DonChuaPhanCong > 0 ? "canh-bao" : "")">
+        <div class="nhan">Chưa có tài xế</div>
+        <div class="so">@Model.DonChuaPhanCong</div>
+    </div>
+    <div class="the-so">
+        <div class="nhan">Chờ tài xế nhận</div>
+        <div class="so">@Model.ChuyenChuaNhan</div>
+    </div>
+    <div class="the-so">
+        <div class="nhan">Đang chạy (@Model.TaiXeDangChay tài xế)</div>
+        <div class="so">@Model.ChuyenDangChay</div>
+    </div>
+    <div class="the-so">
+        <div class="nhan">Đã hoàn thành</div>
+        <div class="so">@Model.ChuyenHoanThanh</div>
+    </div>
+    <div class="the-so">
+        <div class="nhan">Container đã quét hôm nay</div>
+        <div class="so">@Model.QuetHomNay</div>
+    </div>
+    <div class="the-so @(Model.TinChuaDoc > 0 ? "canh-bao" : "")">
+        <div class="nhan">Tin nhắn chưa đọc</div>
+        <div class="so">@Model.TinChuaDoc</div>
+    </div>
+</div>
+
+<div class="khung">
+    <div class="khung-dau">
+        <h2>Tiến độ chuyến trong ngày</h2>
+        <span class="nho">@Model.ChuyenHoanThanh / @Model.TongChuyen chuyến hoàn thành (@Model.PhanTramHoanThanh%)</span>
+    </div>
+    <div class="tien-do">
+        <div class="tien-do-thanh" style="width: @(Model.PhanTramHoanThanh)%"></div>
+    </div>
+</div>
+
+<div class="khung">
+    <div class="khung-dau">
+        <h2>Đơn cần chú ý</h2>
+        <span class="nho">Chưa có tài xế hoặc tài xế chưa nhận chuyến</span>
+    </div>
+    @if (Model.CanChuY.Count == 0)
+    {
+        <p class="rong">Không có đơn nào cần chú ý.</p>
+    }
+    else
+    {
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Tuyến</th>
+                        <th>Loại hàng</th>
+                        <th>Tình trạng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.CanChuY)
+                    {
+                        <tr>
+                            <td><strong>@d.MaDon</strong></td>
+                            <td>@d.TenKhachHang</td>
+                            <td>@d.TenTuyen</td>
+                            <td>@d.LoaiHang</td>
+                            <td>
+                                @if (d.ChuaPhanCong)
+                                {
+                                    <span class="huy-hieu khong">Chưa có tài xế</span>
+                                }
+                                else
+                                {
+                                    <span class="huy-hieu cho">Tài xế chưa nhận chuyến</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
+
+<div class="khung">
+    <div class="khung-dau">
+        <h2>Đang chạy trên đường</h2>
+    </div>
+    @if (Model.DangChay.Count == 0)
+    {
+        <p class="rong">Hiện chưa có chuyến nào đang chạy.</p>
+    }
+    else
+    {
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Tuyến</th>
+                        <th>Tài xế</th>
+                        <th>Loại hàng</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.DangChay)
+                    {
+                        <tr>
+                            <td><strong>@d.MaDon</strong></td>
+                            <td>
+                                <div>@d.TenTuyen</div>
+                                <div class="nho">@d.DiemDi → @d.DiemDen</div>
+                            </td>
+                            <td>
+                                @foreach (var c in d.Chuyens.Where(x => x.TrangThai == TrangThaiChuyen.DangChay))
+                                {
+                                    <div class="dong-chuyen">
+                                        <div>@c.MaTaiXe - @c.HoTenTaiXe</div>
+                                        @if (c.ThoiGianBatDau.HasValue)
+                                        {
+                                            <div class="nho">Bắt đầu lúc @c.ThoiGianBatDau.Value.ToLocalTime().ToString("HH:mm")</div>
+                                        }
+                                    </div>
+                                }
+                            </td>
+                            <td>@d.LoaiHang</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
