@@ -24,15 +24,26 @@ public class AuthController : ControllerBase
     [HttpPost("register")]
     public async Task<IActionResult> Register(RegisterDto dto)
     {
-        if (await _driverRepo.UsernameDaTonTaiAsync(dto.Username))
+        string maTaiXe = (dto.MaTaiXe ?? string.Empty).Trim();
+        string hoTen = (dto.HoTen ?? string.Empty).Trim();
+        string username = (dto.Username ?? string.Empty).Trim();
+        string password = dto.Password ?? string.Empty;
+
+        if (maTaiXe.Length == 0 || hoTen.Length == 0 || username.Length == 0 || password.Length == 0)
+            return BadRequest(new { loi = "Vui lòng nhập đầy đủ thông tin" });
+
+        if (await _driverRepo.UsernameDaTonTaiAsync(username))
             return BadRequest(new { loi = "Username đã tồn tại" });
+
+        if (await _driverRepo.MaTaiXeDaTonTaiAsync(maTaiXe))
+            return BadRequest(new { loi = "Mã tài xế đã tồn tại" });
 
         var driver = new Driver
         {
-            MaTaiXe = dto.MaTaiXe,
-            HoTen = dto.HoTen,
-            Username = dto.Username,
-            PasswordHash = BCrypt.Net.BCrypt.HashPassword(dto.Password)
+            MaTaiXe = maTaiXe,
+            HoTen = hoTen,
+            Username = username,
+            PasswordHash = BCrypt.Net.BCrypt.HashPassword(password)
         };
 
         await _driverRepo.ThemMoiAsync(driver);

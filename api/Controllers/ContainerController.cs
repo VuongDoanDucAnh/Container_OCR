@@ -159,6 +159,8 @@ public class ContainerController : ControllerBase
             });
         }
 
+        await _recordRepo.CapNhatAsync(record);
+
         return Ok(new
         {
             thanhCong = true,
