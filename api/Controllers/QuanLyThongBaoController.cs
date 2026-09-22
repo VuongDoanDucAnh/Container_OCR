@@ -123,7 +123,9 @@ public class QuanLyThongBaoController : Controller
             nguoiGui = t.NguoiGui.ToString(),
             noiDung = t.NoiDung,
             loaiSuCo = t.LoaiSuCo,
-            thoiGian = DateTime.SpecifyKind(t.ThoiGian, DateTimeKind.Utc)
+            thoiGian = DateTime.SpecifyKind(t.ThoiGian, DateTimeKind.Utc),
+            anhBase64 = t.AnhDinhKem is not null ? Convert.ToBase64String(t.AnhDinhKem) : null,
+            anhLoai = t.AnhDinhKemLoaiNoiDung
         }));
     }
 

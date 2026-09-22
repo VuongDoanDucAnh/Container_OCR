@@ -16,4 +16,6 @@ public class TinNhan
     public string? LoaiSuCo { get; set; }
     public DateTime ThoiGian { get; set; } = DateTime.UtcNow;
     public bool DaDoc { get; set; }
+    public byte[]? AnhDinhKem { get; set; }
+    public string? AnhDinhKemLoaiNoiDung { get; set; }
 }

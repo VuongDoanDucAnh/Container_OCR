@@ -13,6 +13,8 @@ namespace DoAnOlympics.Api.Controllers;
 [Authorize]
 public class ThongBaoController : ControllerBase
 {
+    private const long GioiHanAnhBytes = 3 * 1024 * 1024;
+
     private static readonly HashSet<string> LoaiSuCoHopLe = new()
     {
         "XE_HONG",
@@ -92,11 +94,7 @@ public class ThongBaoController : ControllerBase
                 "NOI_DUNG_QUA_DAI"));
         }
 
-        string? loaiSuCo = string.IsNullOrWhiteSpace(dto.LoaiSuCo)
-            ? null
-            : dto.LoaiSuCo.Trim().ToUpperInvariant();
-
-        if (loaiSuCo is not null && !LoaiSuCoHopLe.Contains(loaiSuCo))
+        if (!ThuChuanHoaLoaiSuCo(dto.LoaiSuCo, out string? loaiSuCo))
         {
             return BadRequest(Loi(
                 "Loại sự cố không hợp lệ",
@@ -118,6 +116,91 @@ public class ThongBaoController : ControllerBase
         return Ok(new { thanhCong = true, tin = MapTin(tin) });
     }
 
+    [HttpPost("voi-anh")]
+    public async Task<IActionResult> GuiTinVoiAnh([FromForm] string? noiDung, [FromForm] string? loaiSuCo, IFormFile? anh)
+    {
+        int driverId = LayDriverId();
+
+        if (!await _db.Drivers.AnyAsync(d => d.Id == driverId))
+            return Unauthorized();
+
+        string noi = (noiDung ?? string.Empty).Trim();
+        if (noi.Length == 0)
+        {
+            noi = "(Đính kèm ảnh làm bằng chứng)";
+        }
+
+        if (noi.Length > 1000)
+        {
+            return BadRequest(Loi(
+                "Tin nhắn quá dài",
+                "Vui lòng rút gọn còn tối đa 1000 ký tự",
+                "NOI_DUNG_QUA_DAI"));
+        }
+
+        if (!ThuChuanHoaLoaiSuCo(loaiSuCo, out string? loaiChuan))
+        {
+            return BadRequest(Loi(
+                "Loại sự cố không hợp lệ",
+                "Vui lòng chọn lại loại sự cố trong danh sách",
+                "LOAI_SU_CO_SAI"));
+        }
+
+        byte[]? anhBytes = null;
+        string? anhLoai = null;
+
+        if (anh is not null)
+        {
+            if (anh.Length == 0)
+            {
+                return BadRequest(Loi(
+                    "Ảnh đính kèm bị rỗng",
+                    "Vui lòng chọn lại ảnh",
+                    "ANH_RONG"));
+            }
+
+            if (anh.Length > GioiHanAnhBytes)
+            {
+                return BadRequest(Loi(
+                    "Ảnh quá lớn (tối đa 3MB)",
+                    "Vui lòng chọn ảnh có dung lượng nhỏ hơn",
+                    "ANH_QUA_LON"));
+            }
+
+            using var ms = new MemoryStream();
+            await anh.CopyToAsync(ms);
+            anhBytes = ms.ToArray();
+            anhLoai = string.IsNullOrWhiteSpace(anh.ContentType) ? "image/jpeg" : anh.ContentType;
+        }
+
+        var tin = new TinNhan
+        {
+            DriverId = driverId,
+            NguoiGui = NguoiGuiTin.TaiXe,
+            NoiDung = noi,
+            LoaiSuCo = loaiChuan,
+            AnhDinhKem = anhBytes,
+            AnhDinhKemLoaiNoiDung = anhLoai
+        };
+
+        _db.TinNhans.Add(tin);
+        await _db.SaveChangesAsync();
+
+        return Ok(new { thanhCong = true, tin = MapTin(tin) });
+    }
+
+    private bool ThuChuanHoaLoaiSuCo(string? input, out string? loaiChuan)
+    {
+        if (string.IsNullOrWhiteSpace(input))
+        {
+            loaiChuan = null;
+            return true;
+        }
+
+        loaiChuan = input.Trim().ToUpperInvariant();
+        return LoaiSuCoHopLe.Contains(loaiChuan);
+    }
+
     private int LayDriverId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);
 
     private static object MapTin(TinNhan t) => new
@@ -127,7 +210,9 @@ public class ThongBaoController : ControllerBase
         noiDung = t.NoiDung,
         loaiSuCo = t.LoaiSuCo,
         thoiGian = DateTime.SpecifyKind(t.ThoiGian, DateTimeKind.Utc),
-        daDoc = t.DaDoc
+        daDoc = t.DaDoc,
+        anhBase64 = t.AnhDinhKem is not null ? Convert.ToBase64String(t.AnhDinhKem) : null,
+        anhLoai = t.AnhDinhKemLoaiNoiDung
     };
 
     private static object Loi(string loi, string huongGiaiQuyet, string maLoi) => new

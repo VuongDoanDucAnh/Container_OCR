@@ -237,7 +237,19 @@
                 nhan.textContent = 'Báo sự cố: ' + (nhanSuCo[t.loaiSuCo] || t.loaiSuCo);
                 hop.appendChild(nhan);
             }
-
+            if (t.anhBase64) {
+                const anh = document.createElement('img');
+                anh.src = 'data:' + (t.anhLoai || 'image/jpeg') + ';base64,' + t.anhBase64;
+                anh.style.maxWidth = '220px';
+                anh.style.borderRadius = '10px';
+                anh.style.display = 'block';
+                anh.style.marginBottom = '6px';
+                anh.style.cursor = 'zoom-in';
+                anh.addEventListener('click', function () {
+                    window.open(anh.src, '_blank');
+                });
+                hop.appendChild(anh);
+            }
             const noiDung = document.createElement('div');
             noiDung.className = 'tin-noi-dung';
             noiDung.textContent = t.noiDung;
