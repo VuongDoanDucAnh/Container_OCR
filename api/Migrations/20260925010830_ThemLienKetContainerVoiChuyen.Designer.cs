@@ -4,6 +4,7 @@ using DoAnOlympics.Api.Data;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,11 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace DoAnOlympics.Api.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20260925010830_ThemLienKetContainerVoiChuyen")]
+    partial class ThemLienKetContainerVoiChuyen
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -36,13 +39,7 @@ namespace DoAnOlympics.Api.Migrations
                     b.Property<bool>("DaGhiSheet")
                         .HasColumnType("bit");
 
-                    b.Property<string>("DiaDiem")
-                        .HasColumnType("nvarchar(max)");
-
                     b.Property<int>("DriverId")
-                        .HasColumnType("int");
-
-                    b.Property<int?>("LoaiHinhChuyenId")
                         .HasColumnType("int");
 
                     b.Property<string>("MaContainer")
@@ -58,8 +55,6 @@ namespace DoAnOlympics.Api.Migrations
                     b.HasKey("Id");
 
                     b.HasIndex("DriverId");
-
-                    b.HasIndex("LoaiHinhChuyenId");
 
                     b.HasIndex("PhanCongChuyenId");
 
@@ -147,26 +142,6 @@ namespace DoAnOlympics.Api.Migrations
                         .IsUnique();
 
                     b.ToTable("Drivers");
-                });
-
-            modelBuilder.Entity("DoAnOlympics.Api.Models.LoaiHinhChuyen", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("int");
-
-                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
-
-                    b.Property<decimal>("DonGia")
-                        .HasColumnType("decimal(18,0)");
-
-                    b.Property<string>("Ten")
-                        .IsRequired()
-                        .HasColumnType("nvarchar(max)");
-
-                    b.HasKey("Id");
-
-                    b.ToTable("LoaiHinhChuyens");
                 });
 
             modelBuilder.Entity("DoAnOlympics.Api.Models.PhanCongChuyen", b =>
@@ -313,19 +288,12 @@ namespace DoAnOlympics.Api.Migrations
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("DoAnOlympics.Api.Models.LoaiHinhChuyen", "LoaiHinhChuyen")
-                        .WithMany()
-                        .HasForeignKey("LoaiHinhChuyenId")
-                        .OnDelete(DeleteBehavior.SetNull);
-
                     b.HasOne("DoAnOlympics.Api.Models.PhanCongChuyen", "PhanCongChuyen")
                         .WithMany("ContainerRecords")
                         .HasForeignKey("PhanCongChuyenId")
                         .OnDelete(DeleteBehavior.SetNull);
 
                     b.Navigation("Driver");
-
-                    b.Navigation("LoaiHinhChuyen");
 
                     b.Navigation("PhanCongChuyen");
                 });

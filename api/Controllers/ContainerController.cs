@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using System.Security.Claims;
+using DoAnOlympics.Api.Data;
 using DoAnOlympics.Api.Models;
 using DoAnOlympics.Api.Repositories;
 using DoAnOlympics.Api.Services;
@@ -17,21 +19,24 @@ public class ContainerController : ControllerBase
     private readonly IGoogleSheetsService _sheetsService;
     private readonly IContainerRecordRepository _recordRepo;
     private readonly IDriverRepository _driverRepo;
+    private readonly AppDbContext _db;
 
     public ContainerController(
         IGeminiOcrClient geminiClient,
         IGoogleSheetsService sheetsService,
         IContainerRecordRepository recordRepo,
-        IDriverRepository driverRepo)
+        IDriverRepository driverRepo,
+        AppDbContext db)
     {
         _geminiClient = geminiClient;
         _sheetsService = sheetsService;
         _recordRepo = recordRepo;
         _driverRepo = driverRepo;
+        _db = db;
     }
 
     [HttpPost("scan")]
-    public async Task<IActionResult> Scan(IFormFile anh)
+    public async Task<IActionResult> Scan(IFormFile anh, [FromForm] int? loaiHinhChuyenId, [FromForm] string? diaDiem)
     {
         if (anh is null || anh.Length == 0)
         {
@@ -133,12 +138,32 @@ public class ContainerController : ControllerBase
             });
         }
 
-        var record = new ContainerRecord
-        {
-            DriverId = driverId,
-            MaContainer = ketQuaOcr.MaContainer,
-            ChecksumHopLe = hopLe
-        };
+        var homNay = DateTime.Today;
+        var chuyenDangChay = await _db.PhanCongChuyens
+            .Where(p => p.DriverId == driverId
+                && p.TrangThai == TrangThaiChuyen.DangChay
+                && p.DonHang!.NgayChay == homNay)
+            .OrderBy(p => p.ThoiGianBatDau)
+            .FirstOrDefaultAsync();
+
+            int? loaiHinhHopLe = null;
+            if (loaiHinhChuyenId.HasValue
+                && await _db.LoaiHinhChuyens.AnyAsync(l => l.Id == loaiHinhChuyenId.Value))
+            {
+                loaiHinhHopLe = loaiHinhChuyenId.Value;
+            }
+
+            var record = new ContainerRecord
+            {
+                DriverId = driverId,
+                MaContainer = ketQuaOcr.MaContainer,
+                ChecksumHopLe = hopLe,
+                PhanCongChuyenId = chuyenDangChay?.Id,
+                LoaiHinhChuyenId = loaiHinhHopLe,
+                DiaDiem = string.IsNullOrWhiteSpace(diaDiem) ? null : diaDiem.Trim()
+            };
+        await _recordRepo.ThemMoiAsync(record);
+        await _recordRepo.ThemMoiAsync(record);
         await _recordRepo.ThemMoiAsync(record);
 
         try

@@ -27,6 +27,7 @@ public static class DuLieuMau
 
     public static async Task KhoiTaoAsync(AppDbContext db, IConfiguration config, ILogger logger)
     {
+        await TaoLoaiHinhChuyenAsync(db);
         await TaoQuanLyAsync(db, config, logger);
         await TaoTaiXeMauAsync(db);
         await TaoTuyenDuongAsync(db);
@@ -73,6 +74,20 @@ public static class DuLieuMau
                 PasswordHash = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString("N"))
             });
         }
+
+        await db.SaveChangesAsync();
+    }
+    private static async Task TaoLoaiHinhChuyenAsync(AppDbContext db)
+    {
+        if (await db.LoaiHinhChuyens.AnyAsync())
+        {
+            return;
+        }
+
+        db.LoaiHinhChuyens.AddRange(
+            new LoaiHinhChuyen { Ten = "Một chiều", DonGia = 4_000_000m },
+            new LoaiHinhChuyen { Ten = "Thả rỗng", DonGia = 4_000_000m },
+            new LoaiHinhChuyen { Ten = "Tái xuất", DonGia = 7_200_000m });
 
         await db.SaveChangesAsync();
     }

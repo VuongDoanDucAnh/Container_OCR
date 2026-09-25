@@ -14,6 +14,7 @@ public class AppDbContext : DbContext
     public DbSet<DonHang> DonHangs => Set<DonHang>();
     public DbSet<PhanCongChuyen> PhanCongChuyens => Set<PhanCongChuyen>();
     public DbSet<TinNhan> TinNhans => Set<TinNhan>();
+    public DbSet<LoaiHinhChuyen> LoaiHinhChuyens => Set<LoaiHinhChuyen>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -81,5 +82,21 @@ public class AppDbContext : DbContext
 
         modelBuilder.Entity<TinNhan>()
             .HasIndex(t => new { t.DriverId, t.ThoiGian });
+
+        modelBuilder.Entity<ContainerRecord>()
+            .HasOne(c => c.PhanCongChuyen)
+            .WithMany(p => p.ContainerRecords)
+            .HasForeignKey(c => c.PhanCongChuyenId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<ContainerRecord>()
+            .HasOne(c => c.LoaiHinhChuyen)
+            .WithMany()
+            .HasForeignKey(c => c.LoaiHinhChuyenId)
+            .OnDelete(DeleteBehavior.SetNull);
+
+        modelBuilder.Entity<LoaiHinhChuyen>()
+            .Property(l => l.DonGia)
+            .HasColumnType("decimal(18,0)");
     }
 }

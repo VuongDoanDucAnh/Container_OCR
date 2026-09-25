@@ -1,0 +1,85 @@
+﻿@model KeToanViewModel
+@{
+    ViewData["Trang"] = "ketoan";
+    ViewData["TieuDe"] = "Kế toán";
+    var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+    var tuStr = Model.TuNgay.ToString("yyyy-MM-dd");
+    var denStr = Model.DenNgay.ToString("yyyy-MM-dd");
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Kế toán</h1>
+        <p class="phu">Bảng giá cước và tính lương theo tài xế</p>
+    </div>
+</div>
+
+<div class="khung">
+    <div class="khung-dau">
+        <h2>Giá cước theo loại hình chuyến</h2>
+    </div>
+    @foreach (var lh in Model.DsLoaiHinh)
+    {
+        <form method="post" action="/quanly/ke-toan/gia-cuoc/@lh.Id"
+              style="display:flex;align-items:center;gap:10px;margin-bottom:10px;">
+            @Html.AntiForgeryToken()
+            <span style="min-width:140px;font-weight:600;">@lh.Ten</span>
+            <input type="number" name="donGiaMoi" value="@lh.DonGia" step="1000" min="0"
+                   style="width:160px;padding:8px;border:1px solid #b0bec5;border-radius:8px;" />
+            <span class="nho">đồng / container</span>
+            <button type="submit" class="nut-phu">Lưu</button>
+        </form>
+    }
+</div>
+
+<div class="khung">
+    <div class="khung-dau">
+        <h2>Bảng lương theo tài xế</h2>
+    </div>
+    <form method="get" action="/quanly/ke-toan" class="bo-loc-ngay" style="margin-bottom:14px;">
+        <span class="nho">Từ ngày</span>
+        <input type="date" name="tuNgay" value="@tuStr" />
+        <span class="nho">Đến ngày</span>
+        <input type="date" name="denNgay" value="@denStr" />
+        <button type="submit" class="nut-phu">Xem</button>
+    </form>
+
+    @if (Model.BangLuong.Count == 0)
+    {
+        <p class="rong">Không có dữ liệu trong khoảng ngày này.</p>
+    }
+    else
+    {
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Mã tài xế</th>
+                        <th>Họ tên</th>
+                        <th>Container hợp lệ (đã phân loại)</th>
+                        <th>Chưa phân loại</th>
+                        <th>Tổng tiền</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.BangLuong)
+                    {
+                        <tr>
+                            <td><strong>@d.MaTaiXe</strong></td>
+                            <td>@d.HoTen</td>
+                            <td>@d.SoContainer</td>
+                            <td>
+                                @d.SoChuaPhanLoai
+                                @if (d.SoChuaPhanLoai > 0)
+                                {
+                                    <span class="huy-hieu khong">Cần bổ sung loại hình</span>
+                                }
+                            </td>
+                            <td><strong>@d.TongTien.ToString("N0", vn) đ</strong></td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>
