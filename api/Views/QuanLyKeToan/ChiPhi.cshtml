@@ -1,0 +1,103 @@
+﻿@model ChiPhiViewModel
+@{
+    ViewData["Trang"] = "ketoan";
+    ViewData["TieuDe"] = "Chi phí phát sinh";
+    var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+    var tuStr = Model.TuNgay.ToString("yyyy-MM-dd");
+    var denStr = Model.DenNgay.ToString("yyyy-MM-dd");
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Chi phí phát sinh</h1>
+        <p class="phu">Xăng dầu và chi phí khác tài xế báo lên, giải chi theo tuần</p>
+    </div>
+</div>
+
+<div style="margin-bottom:16px">
+    <a class="nut-phu" href="/quanly/ke-toan">Bảng lương</a>
+    <a class="nut-phu" href="/quanly/ke-toan/chi-phi" style="background:var(--jade);color:white;">Chi phí phát sinh</a>
+    <a class="nut-phu" href="/quanly/ke-toan/bao-cao-thang">Báo cáo tháng</a>
+</div>
+
+<div class="khung">
+    <form method="get" action="/quanly/ke-toan/chi-phi" class="bo-loc-ngay" style="margin-bottom:14px;">
+        <span class="nho">Từ ngày</span>
+        <input type="date" name="tuNgay" value="@tuStr" />
+        <span class="nho">Đến ngày</span>
+        <input type="date" name="denNgay" value="@denStr" />
+        <button type="submit" class="nut-phu">Xem</button>
+    </form>
+
+    @if (Model.TheoTaiXe.Count == 0)
+    {
+        <p class="rong">Không có chi phí nào trong khoảng ngày này.</p>
+    }
+    else
+    {
+        foreach (var nhom in Model.TheoTaiXe)
+        {
+            <div class="khung" style="margin-bottom:16px">
+                <div class="khung-dau">
+                    <h2>@nhom.MaTaiXe - @nhom.HoTen</h2>
+                    <span class="nho">Chờ giải chi: @nhom.TongChoGiaiChi.ToString("N0", vn) đ</span>
+                </div>
+
+                <div class="cuon-ngang">
+                    <table class="bang">
+                        <thead>
+                            <tr>
+                                <th>Thời gian</th>
+                                <th>Số tiền</th>
+                                <th>Giá dầu</th>
+                                <th>Số lít</th>
+                                <th>Ghi chú</th>
+                                <th>Trạng thái</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var cp in nhom.DanhSach)
+                            {
+                                <tr>
+                                    <td>@cp.ThoiGianGui.ToLocalTime().ToString("HH:mm dd/MM")</td>
+                                    <td>@cp.SoTien.ToString("N0", vn) đ</td>
+                                    <td>@cp.GiaDau.ToString("N0", vn) đ/lít</td>
+                                    <td>@cp.SoLit.ToString("N1", vn) lít</td>
+                                    <td>@(string.IsNullOrWhiteSpace(cp.GhiChu) ? "-" : cp.GhiChu)</td>
+                                    <td>
+                                        @if (cp.DaGiaiChi)
+                                        {
+                                            <span class="huy-hieu xong">Đã giải chi</span>
+                                        }
+                                        else
+                                        {
+                                            <form method="post" action="/quanly/ke-toan/chi-phi/giai-chi/@cp.Id" style="display:inline">
+                                                @Html.AntiForgeryToken()
+                                                <input type="hidden" name="tuNgay" value="@tuStr" />
+                                                <input type="hidden" name="denNgay" value="@denStr" />
+                                                <button type="submit" class="nut-phu">Đánh dấu đã giải chi</button>
+                                            </form>
+                                        }
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                @if (nhom.CoChoGiaiChi)
+                {
+                    <form method="post" action="/quanly/ke-toan/chi-phi/giai-chi-tuan" style="margin-top:10px">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="driverId" value="@nhom.DriverId" />
+                        <input type="hidden" name="tuNgay" value="@tuStr" />
+                        <input type="hidden" name="denNgay" value="@denStr" />
+                        <button type="submit" class="nut-phu" style="background:var(--jade);color:white;">
+                            Giải chi tất cả trong tuần này
+                        </button>
+                    </form>
+                }
+            </div>
+        }
+    }
+</div>

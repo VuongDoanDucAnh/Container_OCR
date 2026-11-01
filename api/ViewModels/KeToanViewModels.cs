@@ -11,6 +11,17 @@ public class LuongTaiXeItem
     public decimal TongTien { get; set; }
 }
 
+public class TuyenThongKeItem
+{
+    public string TenTuyen { get; set; } = string.Empty;
+    public int SoDon { get; set; }
+    public decimal DoanhThu { get; set; }
+    public decimal LuongTaiXe { get; set; }
+    public int SoChuyenHoanThanh { get; set; }
+
+    public decimal LoiNhuanTamTinh => DoanhThu - LuongTaiXe;
+}
+
 public class KeToanViewModel
 {
     public DateTime TuNgay { get; set; }

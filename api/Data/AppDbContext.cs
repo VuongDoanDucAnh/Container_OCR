@@ -15,6 +15,7 @@ public class AppDbContext : DbContext
     public DbSet<PhanCongChuyen> PhanCongChuyens => Set<PhanCongChuyen>();
     public DbSet<TinNhan> TinNhans => Set<TinNhan>();
     public DbSet<LoaiHinhChuyen> LoaiHinhChuyens => Set<LoaiHinhChuyen>();
+    public DbSet<ChiPhiPhatSinh> ChiPhiPhatSinhs => Set<ChiPhiPhatSinh>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -66,6 +67,12 @@ public class AppDbContext : DbContext
             .HasForeignKey(p => p.DriverId);
 
         modelBuilder.Entity<PhanCongChuyen>()
+            .Property(p => p.NguoiKyTen).HasMaxLength(100);
+
+        modelBuilder.Entity<PhanCongChuyen>()
+            .Property(p => p.AnhGiaoHangLoaiNoiDung).HasMaxLength(50);
+
+        modelBuilder.Entity<PhanCongChuyen>()
             .Property(p => p.TrangThai)
             .HasConversion<string>()
             .HasMaxLength(20);
@@ -95,8 +102,48 @@ public class AppDbContext : DbContext
             .HasForeignKey(c => c.LoaiHinhChuyenId)
             .OnDelete(DeleteBehavior.SetNull);
 
+        modelBuilder.Entity<ContainerRecord>()
+            .HasIndex(c => c.MaYeuCau)
+            .IsUnique();
+
+        modelBuilder.Entity<ContainerRecord>()
+            .Property(c => c.AnhPublicId)
+            .HasMaxLength(200);
+
         modelBuilder.Entity<LoaiHinhChuyen>()
             .Property(l => l.DonGia)
             .HasColumnType("decimal(18,0)");
+        modelBuilder.Entity<ChiPhiPhatSinh>()
+            .HasOne(c => c.Driver)
+            .WithMany()
+            .HasForeignKey(c => c.DriverId);
+
+        modelBuilder.Entity<ChiPhiPhatSinh>()
+            .Property(c => c.SoTien)
+            .HasColumnType("decimal(18,0)");
+
+        modelBuilder.Entity<ChiPhiPhatSinh>()
+            .Property(c => c.GiaDau)
+            .HasColumnType("decimal(18,0)");
+
+        modelBuilder.Entity<ChiPhiPhatSinh>()
+            .Property(c => c.SoLit)
+            .HasColumnType("decimal(10,2)");
+
+        modelBuilder.Entity<ChiPhiPhatSinh>()
+            .Property(c => c.TrangThai)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<ChiPhiPhatSinh>()
+            .HasIndex(c => new { c.DriverId, c.ThoiGianGui });
+
+        modelBuilder.Entity<DonHang>()
+            .Property(d => d.DoanhThu)
+            .HasColumnType("decimal(18,0)");
+
+        modelBuilder.Entity<Driver>()
+            .Property(d => d.BienSoXe)
+            .HasMaxLength(20);
     }
 }

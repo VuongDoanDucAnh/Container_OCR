@@ -2,42 +2,53 @@
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
              x:Class="App_OCR.ScanPage"
-             BackgroundColor="{StaticResource JadeSoft}">
+             Title="Chụp hình"
+             BackgroundColor="Black">
 
-    <ScrollView>
-        <VerticalStackLayout Padding="30,20" Spacing="15">
+    <Grid>
+        <Image x:Name="ImgPreview" Aspect="AspectFit" BackgroundColor="Black" />
 
-            <Label Text="Quét mã container" FontSize="22"
-                   TextColor="{StaticResource JadeDark}" HorizontalOptions="Center" />
+        <VerticalStackLayout x:Name="VslChoAnh" VerticalOptions="Center" HorizontalOptions="Center" Spacing="10" Padding="40,0">
+            <Label Text="📦" FontSize="56" TextColor="White" Opacity="0.5" HorizontalOptions="Center" />
+            <Label Text="Chưa có ảnh, hãy chụp hoặc chọn ảnh container" FontSize="14" TextColor="White" Opacity="0.6"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
+        </VerticalStackLayout>
 
-            <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource JadeLight}"
-                    StrokeThickness="1" HeightRequest="250" BackgroundColor="White" Padding="0">
-                <Image x:Name="ImgPreview" Aspect="AspectFit" />
+        <HorizontalStackLayout VerticalOptions="Start" HorizontalOptions="End" Margin="16" Spacing="8">
+            <Border x:Name="BrdChoGui" StrokeShape="RoundRectangle 14" BackgroundColor="#E65100" Padding="10,4" IsVisible="False">
+                <HorizontalStackLayout Spacing="6" VerticalOptions="Center">
+                    <Label Text="⏳" FontSize="12" VerticalOptions="Center" />
+                    <Label x:Name="LblSoChoGui" Text="Chờ gửi: 0" FontSize="12" TextColor="White" FontAttributes="Bold" VerticalOptions="Center" />
+                </HorizontalStackLayout>
             </Border>
 
-            <HorizontalStackLayout Spacing="10" HorizontalOptions="Center">
-                <Button x:Name="BtnChupAnh" Text="Chụp ảnh"
-                        BackgroundColor="{StaticResource JadePrimary}" TextColor="White"
-                        Clicked="BtnChupAnh_Clicked" />
-                <Button x:Name="BtnChonThuVien" Text="Chọn từ thư viện"
-                        BackgroundColor="{StaticResource JadeLight}" TextColor="White"
-                        Clicked="BtnChonThuVien_Clicked" />
-            </HorizontalStackLayout>
+            <Button x:Name="BtnDongBoNgay" Text="Đồng bộ ngay" BackgroundColor="#00695C" TextColor="White"
+                    FontSize="12" HeightRequest="32" CornerRadius="16" Padding="12,0" Clicked="BtnDongBoNgay_Clicked" />
+        </HorizontalStackLayout>
 
-            <Button x:Name="BtnChupLai" Text="Chụp lại"
-                    BackgroundColor="{StaticResource Gray400}" TextColor="White"
-                    IsVisible="False" Clicked="BtnChupLai_Clicked" />
+        <ActivityIndicator x:Name="LoadingScan" IsRunning="False" IsVisible="False" Color="White" Scale="1.5"
+                           VerticalOptions="Center" HorizontalOptions="Center" />
 
-            <Button x:Name="BtnGui" Text="Gửi" IsEnabled="False"
-                    BackgroundColor="{StaticResource JadeDark}" TextColor="White"
-                    Clicked="BtnGui_Clicked" />
+        <Grid VerticalOptions="End" BackgroundColor="#CC001410" Padding="20,16,20,28"
+              RowDefinitions="Auto,Auto,Auto,Auto" RowSpacing="12">
 
-            <ActivityIndicator x:Name="LoadingScan" IsRunning="False" IsVisible="False"
-                                Color="{StaticResource JadePrimary}" />
+            <Label Grid.Row="0" x:Name="LblKetQua" Text="" FontSize="13" TextColor="White"
+                   HorizontalOptions="Center" HorizontalTextAlignment="Center" />
 
-            <Label x:Name="LblKetQua" Text="" HorizontalOptions="Center" />
+            <Grid Grid.Row="1" ColumnDefinitions="Auto,*,Auto" ColumnSpacing="18" HorizontalOptions="Center">
+                <Button Grid.Column="0" x:Name="BtnChonThuVien" Text="🖼" FontSize="20" WidthRequest="52" HeightRequest="52"
+                        CornerRadius="26" Padding="0" BackgroundColor="#33FFFFFF" TextColor="White" Clicked="BtnChonThuVien_Clicked" />
+                <Button Grid.Column="1" x:Name="BtnChupAnh" Text="" WidthRequest="70" HeightRequest="70" CornerRadius="35"
+                        Padding="0" BackgroundColor="White" BorderColor="#33FFFFFF" BorderWidth="4" Clicked="BtnChupAnh_Clicked" />
+                <Button Grid.Column="2" x:Name="BtnChupLai" Text="↺" FontSize="22" WidthRequest="52" HeightRequest="52"
+                        CornerRadius="26" Padding="0" BackgroundColor="#33FFFFFF" TextColor="White" IsVisible="False" Clicked="BtnChupLai_Clicked" />
+            </Grid>
 
-        </VerticalStackLayout>
-    </ScrollView>
+            <Picker Grid.Row="2" x:Name="PkLoaiHinh" Title="Loại hình chuyến (không bắt buộc)"
+                    TitleColor="#80CBC4" TextColor="White" BackgroundColor="Transparent" />
 
+            <Entry Grid.Row="3" x:Name="EdDiaDiem" Placeholder="Địa điểm bãi / cảng (không bắt buộc)"
+                   PlaceholderColor="#80CBC4" TextColor="White" BackgroundColor="#22FFFFFF" HeightRequest="40" Margin="0,0,0,4" />
+        </Grid>
+    </Grid>
 </ContentPage>

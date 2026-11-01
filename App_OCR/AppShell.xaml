@@ -10,20 +10,43 @@
     Shell.TabBarUnselectedColor="{StaticResource JadeSoft}"
     Shell.TabBarForegroundColor="White">
 
+    <Shell.TitleView>
+        <HorizontalStackLayout Spacing="10" VerticalOptions="Center" Padding="4,0,0,0">
+            <Border StrokeShape="RoundRectangle 16"
+                    Stroke="Transparent"
+                    BackgroundColor="White"
+                    WidthRequest="32"
+                    HeightRequest="32"
+                    Padding="0">
+                <Label Text="CT"
+                       FontSize="13"
+                       FontAttributes="Bold"
+                       TextColor="{StaticResource JadeDark}"
+                       HorizontalOptions="Center"
+                       VerticalOptions="Center" />
+            </Border>
+            <Label Text="Container Track"
+                   FontSize="17"
+                   FontAttributes="Bold"
+                   TextColor="White"
+                   VerticalOptions="Center" />
+        </HorizontalStackLayout>
+    </Shell.TitleView>
+
     <TabBar>
-        <Tab Title="🏠 Trang chủ" Route="trangchu">
+        <Tab Title="Trang chủ" Route="trangchu">
             <ShellContent ContentTemplate="{DataTemplate local:TrangChuPage}" />
         </Tab>
-        <Tab Title="📋 Lịch sử" Route="lichsu">
+        <Tab Title="Lịch sử" Route="lichsu">
             <ShellContent ContentTemplate="{DataTemplate local:LichSuPage}" />
         </Tab>
-        <Tab Title="📷 Chụp hình" Route="scan">
+        <Tab Title="Chụp hình" Route="scan">
             <ShellContent ContentTemplate="{DataTemplate local:ScanPage}" />
         </Tab>
-        <Tab Title="🔔 Thông báo" Route="thongbao">
+        <Tab Title="Thông báo" Route="thongbao">
             <ShellContent ContentTemplate="{DataTemplate local:ThongBaoPage}" />
         </Tab>
-        <Tab Title="👤 Cá nhân" Route="canhan">
+        <Tab Title="Cá nhân" Route="canhan">
             <ShellContent ContentTemplate="{DataTemplate local:CaNhanPage}" />
         </Tab>
     </TabBar>

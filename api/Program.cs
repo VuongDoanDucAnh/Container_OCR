@@ -15,6 +15,8 @@ builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IContainerRecordRepository, ContainerRecordRepository>();
 
 builder.Services.AddHttpClient<IGeminiOcrClient, GeminiOcrClient>();
+builder.Services.AddHttpClient<IBaoCaoAiService, BaoCaoAiService>();
+builder.Services.AddHttpClient<IGeminiHoaDonClient, GeminiHoaDonClient>();
 builder.Services.AddScoped<IGoogleSheetsService, GoogleSheetsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 

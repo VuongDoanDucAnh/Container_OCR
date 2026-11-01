@@ -1,0 +1,74 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App_OCR.ChiPhiPage"
+             Title="Chi phí xăng dầu"
+             BackgroundColor="{StaticResource JadeSoft}">
+
+    <Grid RowDefinitions="Auto,*" Padding="0">
+
+        <Border Grid.Row="0"
+                StrokeShape="RoundRectangle 0,0,20,20"
+                Stroke="Transparent"
+                BackgroundColor="{StaticResource JadePrimary}"
+                Padding="20,18,20,20">
+            <VerticalStackLayout Spacing="10">
+                <Label Text="Báo chi phí xăng dầu" FontSize="18" FontAttributes="Bold" TextColor="White" />
+
+                <Button x:Name="BtnQuetHoaDon" Text="Quét hóa đơn tự động"
+                        BackgroundColor="Transparent" TextColor="White"
+                        BorderColor="White" BorderWidth="1"
+                        HeightRequest="44" CornerRadius="10"
+                        Clicked="BtnQuetHoaDon_Clicked" />
+
+                <Entry x:Name="EdSoTien" Placeholder="Số tiền đã chi (đ)" Keyboard="Numeric"
+                       TextColor="White" PlaceholderColor="{StaticResource JadeSoft}" />
+                <Entry x:Name="EdGiaDau" Placeholder="Giá dầu (đ/lít)" Keyboard="Numeric"
+                       TextColor="White" PlaceholderColor="{StaticResource JadeSoft}" />
+                <Entry x:Name="EdSoLit" Placeholder="Số lít đã đổ" Keyboard="Numeric"
+                       TextColor="White" PlaceholderColor="{StaticResource JadeSoft}" />
+                <Entry x:Name="EdGhiChu" Placeholder="Ghi chú (không bắt buộc)"
+                       TextColor="White" PlaceholderColor="{StaticResource JadeSoft}" />
+
+                <Button x:Name="BtnGuiChiPhi" Text="Gửi báo chi phí"
+                        BackgroundColor="White" TextColor="{StaticResource JadeDark}"
+                        FontAttributes="Bold" HeightRequest="46" CornerRadius="10"
+                        Clicked="BtnGuiChiPhi_Clicked" />
+
+                <Label x:Name="LblKetQua" Text="" TextColor="White" FontSize="13" HorizontalOptions="Center" />
+            </VerticalStackLayout>
+        </Border>
+
+        <Grid Grid.Row="1" RowDefinitions="Auto,*" Padding="16">
+            <Label Grid.Row="0" Text="Lịch sử đã gửi" FontSize="16" FontAttributes="Bold"
+                   TextColor="{StaticResource JadeDark}" Margin="0,0,0,10" />
+
+            <RefreshView Grid.Row="1" x:Name="RvChiPhi" Refreshing="RvChiPhi_Refreshing">
+                <CollectionView x:Name="CvChiPhi">
+                    <CollectionView.EmptyView>
+                        <Label Text="Chưa gửi chi phí nào" HorizontalOptions="Center"
+                               TextColor="{StaticResource Gray500}" Margin="0,30,0,0" />
+                    </CollectionView.EmptyView>
+                    <CollectionView.ItemTemplate>
+                        <DataTemplate>
+                            <Border StrokeShape="RoundRectangle 10" Margin="0,0,0,10" Padding="14" BackgroundColor="White">
+                                <VerticalStackLayout Spacing="4">
+                                    <Grid ColumnDefinitions="*,Auto">
+                                        <Label Grid.Column="0" Text="{Binding SoTienHienThi}" FontSize="16"
+                                               FontAttributes="Bold" TextColor="{StaticResource JadePrimary}" />
+                                        <Label Grid.Column="1" Text="{Binding TrangThaiHienThi}" FontSize="12"
+                                               TextColor="{Binding MauTrangThai}" />
+                                    </Grid>
+                                    <Label Text="{Binding ChiTietHienThi}" FontSize="12" TextColor="{StaticResource Gray500}" />
+                                    <Label Text="{Binding GhiChu}" FontSize="12" IsVisible="{Binding CoGhiChu}" />
+                                    <Label Text="{Binding ThoiGianHienThi}" FontSize="11" TextColor="{StaticResource Gray400}" />
+                                </VerticalStackLayout>
+                            </Border>
+                        </DataTemplate>
+                    </CollectionView.ItemTemplate>
+                </CollectionView>
+            </RefreshView>
+        </Grid>
+    </Grid>
+
+</ContentPage>

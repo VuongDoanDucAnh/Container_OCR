@@ -18,6 +18,7 @@
         <input type="date" name="ngay" value="@hienTai" onchange="this.form.submit()" />
         <a class="nut-phu" href="/quanly/don-hang?ngay=@sau">Hôm sau ›</a>
         <a class="nut-phu" href="/quanly/don-hang">Hôm nay</a>
+        <a class="nut-phu" href="/quanly/don-hang/tao?ngay=@hienTai" style="background:var(--jade);color:white;">+ Tạo đơn mới</a>
     </form>
 </div>
 
@@ -75,6 +76,8 @@ else
                         <th>Tuyến</th>
                         <th>Loại hàng</th>
                         <th>Tài xế phụ trách</th>
+                        <th>Doanh thu</th>
+                        <th>Chữ ký</th>
                         <th>Ghi chú</th>
                     </tr>
                 </thead>
@@ -101,11 +104,44 @@ else
                                         <div class="dong-chuyen">
                                             <div>@c.MaTaiXe - @c.HoTenTaiXe</div>
                                             <span class="huy-hieu @NhanHienThi.LopCss(c.TrangThai)">@NhanHienThi.TrangThai(c.TrangThai)</span>
+                                            @if (c.MaContainerDaQuet.Count > 0)
+                                            {
+                                                <div class="nho">Đã quét: @string.Join(", ", c.MaContainerDaQuet)</div>
+                                            }
                                         </div>
                                     }
                                 }
                             </td>
-                            <td>@(string.IsNullOrWhiteSpace(d.GhiChu) ? "-" : d.GhiChu)</td>
+                            <td>
+                                <form method="post" action="/quanly/don-hang/doanh-thu/@d.Id" style="display:flex;gap:6px;align-items:center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="ngay" value="@hienTai" />
+                                    <input type="number" name="doanhThu" value="@d.DoanhThu" step="1000" min="0"
+                                           style="width:110px;padding:6px;border:1px solid #b0bec5;border-radius:6px;font-size:12px;" />
+                                    <button type="submit" class="nut-phu" style="padding:5px 8px;font-size:11px;">Lưu</button>
+                                </form>
+                            </td>
+                            <td>
+                                @if (d.CoChuKy)
+                                {
+                                    <a class="nut-phu" href="/quanly/don-hang/chu-ky/@d.Id" target="_blank" style="padding:4px 8px;font-size:12px;text-decoration:none;">
+                                        📝 Xem chữ ký
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color:#94a3b8;font-size:13px;">Chưa ký</span>
+                                }
+                            </td>
+                            <td>
+                                @(string.IsNullOrWhiteSpace(d.GhiChu) ? "-" : d.GhiChu)
+                                @if (d.ChuaPhanCong)
+                                {
+                                    <div class="nho" style="margin-top:6px">
+                                        <a class="nut-phu" href="/quanly/don-hang/gan-tai-xe/@d.Id">+ Gán tài xế</a>
+                                    </div>
+                                }
+                            </td>
                         </tr>
                     }
                 </tbody>

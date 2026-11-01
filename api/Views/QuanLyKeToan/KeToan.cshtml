@@ -5,13 +5,24 @@
     var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
     var tuStr = Model.TuNgay.ToString("yyyy-MM-dd");
     var denStr = Model.DenNgay.ToString("yyyy-MM-dd");
+    var tomTat = ViewBag.TomTat as string;
+    var loiTomTat = ViewBag.LoiTomTat as string;
+    var cauHoiAI = ViewBag.CauHoiAI as string;
+    var cauTraLoiAI = ViewBag.CauTraLoiAI as string;
+    var loiCauTraLoiAI = ViewBag.LoiCauTraLoiAI as string;
 }
 
 <div class="tieu-de-trang">
     <div>
         <h1>Kế toán</h1>
-        <p class="phu">Bảng giá cước và tính lương theo tài xế</p>
+        <p class="phu">Bảng giá cước, bảng lương và chi phí phát sinh</p>
     </div>
+</div>
+
+<div style="margin-bottom:16px">
+    <a class="nut-phu" href="/quanly/ke-toan" style="background:var(--jade);color:white;">Bảng lương</a>
+    <a class="nut-phu" href="/quanly/ke-toan/chi-phi">Chi phí phát sinh</a>
+    <a class="nut-phu" href="/quanly/ke-toan/bao-cao-thang">Báo cáo tháng</a>
 </div>
 
 <div class="khung">
@@ -81,5 +92,54 @@
                 </tbody>
             </table>
         </div>
+
+        <form method="post" action="/quanly/ke-toan/tom-tat" style="margin-top:16px">
+            @Html.AntiForgeryToken()
+            <input type="hidden" name="tuNgay" value="@tuStr" />
+            <input type="hidden" name="denNgay" value="@denStr" />
+            <button type="submit" class="nut-phu">✨ Tạo tóm tắt AI cho kỳ này</button>
+            <span class="nho">Mỗi lần bấm dùng 1 lượt gọi AI, hạn chế bấm lặp lại nhiều lần.</span>
+        </form>
+
+        @if (!string.IsNullOrEmpty(tomTat))
+        {
+            <div class="khung" style="margin-top:12px;background:var(--jade-nhat);border-left:4px solid var(--jade);">
+                <div class="khung-dau"><h2>Tóm tắt AI</h2></div>
+                <p style="white-space:pre-wrap;margin:0">@tomTat</p>
+            </div>
+        }
+        @if (!string.IsNullOrEmpty(loiTomTat))
+        {
+            <p style="color:#c62828;margin-top:10px">@loiTomTat</p>
+        }
+    }
+</div>
+
+<div class="khung">
+    <div class="khung-dau">
+        <h2>💬 Hỏi trợ lý AI</h2>
+    </div>
+    <p class="nho" style="margin-top:0">
+        Trả lời dựa trên số liệu theo tài xế và theo tuyến (gồm lợi nhuận tạm tính) trong khoảng ngày đã chọn ở trên.
+        Lưu ý: lợi nhuận theo tuyến chưa trừ tiền dầu, vì chi phí dầu hiện chỉ ghi theo tài xế.
+    </p>
+    <form method="post" action="/quanly/ke-toan/hoi-ai">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="tuNgay" value="@tuStr" />
+        <input type="hidden" name="denNgay" value="@denStr" />
+        <textarea name="cauHoi" rows="2" placeholder="Ví dụ: Tuyến nào có lợi nhuận tạm tính cao nhất?"
+                  style="width:100%;padding:9px;border:1px solid #b0bec5;border-radius:8px;margin-bottom:8px;">@cauHoiAI</textarea>
+        <button type="submit" class="nut-phu" style="background:var(--jade);color:white;">Gửi câu hỏi</button>
+    </form>
+
+    @if (!string.IsNullOrEmpty(cauTraLoiAI))
+    {
+        <div class="khung" style="margin-top:12px;background:var(--jade-nhat);border-left:4px solid var(--jade);">
+            <p style="white-space:pre-wrap;margin:0">@cauTraLoiAI</p>
+        </div>
+    }
+    @if (!string.IsNullOrEmpty(loiCauTraLoiAI))
+    {
+        <p style="color:#c62828;margin-top:10px">@loiCauTraLoiAI</p>
     }
 </div>

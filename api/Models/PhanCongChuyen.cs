@@ -17,4 +17,11 @@ public class PhanCongChuyen
     public TrangThaiChuyen TrangThai { get; set; } = TrangThaiChuyen.ChuaNhan;
     public DateTime? ThoiGianBatDau { get; set; }
     public DateTime? ThoiGianKetThuc { get; set; }
+    public List<ContainerRecord> ContainerRecords { get; set; } = new();
+
+    // Dữ liệu e-POD mới bổ sung
+    public byte[]? AnhGiaoHang { get; set; }
+    public string? AnhGiaoHangLoaiNoiDung { get; set; }
+    public byte[]? AnhChuKy { get; set; }
+    public string? NguoiKyTen { get; set; }
 }

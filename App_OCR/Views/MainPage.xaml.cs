@@ -41,6 +41,7 @@ public partial class MainPage : ContentPage
                 if (result?.Token is not null)
                 {
                     await SecureStorage.Default.SetAsync("jwt_token", result.Token);
+                    await SecureStorage.Default.SetAsync("ma_tai_xe", result.MaTaiXe ?? string.Empty);
                     LblResult.TextColor = Colors.Green;
                     LblResult.Text = "Đăng nhập thành công";
                     await Navigation.PopModalAsync();

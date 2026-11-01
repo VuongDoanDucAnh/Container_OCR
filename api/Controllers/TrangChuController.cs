@@ -3,6 +3,7 @@ using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using DoAnOlympics.Api.Data;
+using DoAnOlympics.Api.DTOs;
 using DoAnOlympics.Api.Models;
 
 namespace DoAnOlympics.Api.Controllers;
@@ -117,7 +118,7 @@ public class TrangChuController : ControllerBase
     }
 
     [HttpPost("chuyen/{id:int}/hoan-thanh")]
-    public async Task<IActionResult> HoanThanh(int id)
+    public async Task<IActionResult> HoanThanh(int id, [FromBody] HoanThanhChuyenDto? dto)
     {
         int driverId = LayDriverId();
 
@@ -138,11 +139,67 @@ public class TrangChuController : ControllerBase
                 "SAI_TRANG_THAI"));
         }
 
+        byte[]? anhChuKy = null;
+        byte[]? anhGiaoHang = null;
+
+        if (dto != null)
+        {
+            if (!string.IsNullOrWhiteSpace(dto.AnhChuKyBase64)
+                && !TryGiaiMaBase64(dto.AnhChuKyBase64, out anhChuKy))
+            {
+                return BadRequest(Loi(
+                    "Ảnh chữ ký gửi lên không hợp lệ",
+                    "Vui lòng ký lại và xác nhận lần nữa",
+                    "ANH_CHU_KY_KHONG_HOP_LE"));
+            }
+
+            if (!string.IsNullOrWhiteSpace(dto.AnhGiaoHangBase64)
+                && !TryGiaiMaBase64(dto.AnhGiaoHangBase64, out anhGiaoHang))
+            {
+                return BadRequest(Loi(
+                    "Ảnh biên bản giao hàng gửi lên không hợp lệ",
+                    "Vui lòng chụp lại biên bản và xác nhận lần nữa",
+                    "ANH_GIAO_HANG_KHONG_HOP_LE"));
+            }
+        }
+
         chuyen.TrangThai = TrangThaiChuyen.HoanThanh;
         chuyen.ThoiGianKetThuc = DateTime.UtcNow;
+
+        if (dto != null)
+        {
+            if (!string.IsNullOrWhiteSpace(dto.NguoiKyTen))
+                chuyen.NguoiKyTen = dto.NguoiKyTen.Trim();
+
+            if (anhChuKy != null)
+                chuyen.AnhChuKy = anhChuKy;
+
+            if (anhGiaoHang != null)
+            {
+                chuyen.AnhGiaoHang = anhGiaoHang;
+                chuyen.AnhGiaoHangLoaiNoiDung = string.IsNullOrWhiteSpace(dto.AnhGiaoHangLoaiNoiDung)
+                    ? "image/jpeg"
+                    : dto.AnhGiaoHangLoaiNoiDung.Trim();
+            }
+        }
+
         await _db.SaveChangesAsync();
 
         return Ok(new { thanhCong = true, trangThai = chuyen.TrangThai.ToString() });
+    }
+
+    private static bool TryGiaiMaBase64(string chuoi, out byte[]? duLieu)
+    {
+        try
+        {
+            duLieu = Convert.FromBase64String(chuoi);
+            return true;
+        }
+        catch (FormatException)
+        {
+            duLieu = null;
+            return false;
+        }
     }
 
     private int LayDriverId() => int.Parse(User.FindFirstValue(ClaimTypes.NameIdentifier)!);

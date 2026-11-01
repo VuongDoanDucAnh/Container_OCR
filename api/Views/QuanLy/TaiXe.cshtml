@@ -24,6 +24,7 @@
                 <thead>
                     <tr>
                         <th>Mã tài xế</th>
+                        <th>Biển số xe</th>
                         <th>Họ tên</th>
                         <th>Trạng thái hôm nay</th>
                         <th>Chuyến hôm nay</th>
@@ -38,6 +39,14 @@
                     {
                         <tr>
                             <td><strong>@t.MaTaiXe</strong></td>
+                            <td>
+                                <form method="post" action="/quanly/tai-xe/bien-so/@t.Id" style="display:flex;gap:6px;align-items:center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="text" name="bienSo" value="@t.BienSoXe" placeholder="51C-123.45"
+                                           style="width:110px;padding:6px;border:1px solid #b0bec5;border-radius:6px;font-size:12px;" />
+                                    <button type="submit" class="nut-phu" style="padding:5px 8px;font-size:11px;">Lưu</button>
+                                </form>
+                            </td>
                             <td>@t.HoTen</td>
                             <td><span class="huy-hieu @t.LopCss">@t.TrangThaiTongHop</span></td>
                             <td>

@@ -9,10 +9,12 @@ public class ChuyenItem
     public TrangThaiChuyen TrangThai { get; set; }
     public DateTime? ThoiGianBatDau { get; set; }
     public DateTime? ThoiGianKetThuc { get; set; }
+    public List<string> MaContainerDaQuet { get; set; } = new();
 }
 
 public class DonHangItem
 {
+    public int Id { get; set; }
     public string MaDon { get; set; } = string.Empty;
     public string TenKhachHang { get; set; } = string.Empty;
     public string TenTuyen { get; set; } = string.Empty;
@@ -21,11 +23,14 @@ public class DonHangItem
     public double KhoangCachKm { get; set; }
     public string LoaiHang { get; set; } = string.Empty;
     public string? GhiChu { get; set; }
+    public decimal DoanhThu { get; set; }
     public List<ChuyenItem> Chuyens { get; set; } = new();
 
     public bool ChuaPhanCong => Chuyens.Count == 0;
 
     public bool CanChuY => Chuyens.Count == 0 || Chuyens.All(c => c.TrangThai == TrangThaiChuyen.ChuaNhan);
+
+    public bool CoChuKy { get; set; }
 }
 
 public class TuyenTongHopItem
@@ -79,6 +84,7 @@ public class TaiXeItem
     public string MaTaiXe { get; set; } = string.Empty;
     public string HoTen { get; set; } = string.Empty;
     public DateTime NgayTao { get; set; }
+    public string? BienSoXe { get; set; }
     public int TongContainerDaQuet { get; set; }
     public int QuetHomNay { get; set; }
     public List<ChuyenTaiXeItem> Chuyens { get; set; } = new();
@@ -126,4 +132,20 @@ public static class NhanHienThi
         TrangThaiChuyen.DangChay => "chay",
         _ => "xong"
     };
+}
+
+public class TaoDonHangForm
+{
+    public int TuyenDuongId { get; set; }
+    public string TenKhachHang { get; set; } = string.Empty;
+    public string LoaiHang { get; set; } = string.Empty;
+    public string? GhiChu { get; set; }
+    public decimal DoanhThu { get; set; }
+    public DateTime NgayChay { get; set; } = DateTime.Today;
+}
+
+public class GanTaiXeForm
+{
+    public int DonHangId { get; set; }
+    public int DriverId { get; set; }
 }

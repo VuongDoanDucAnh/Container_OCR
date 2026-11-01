@@ -17,4 +17,9 @@ public class ContainerRecord
     public int? LoaiHinhChuyenId { get; set; }
     public LoaiHinhChuyen? LoaiHinhChuyen { get; set; }
     public string? DiaDiem { get; set; }
+    public Guid? MaYeuCau { get; set; }
+    public double? ViDo { get; set; }
+    public double? KinhDo { get; set; }
+    public DateTime? ThoiGianNhanServer { get; set; }
+    public string? AnhPublicId { get; set; }
 }

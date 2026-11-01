@@ -1,0 +1,60 @@
+﻿@model TaoDonHangForm
+@{
+    ViewData["Trang"] = "don";
+    ViewData["TieuDe"] = "Tạo đơn hàng";
+    var dsTuyen = ViewBag.DsTuyen as List<TuyenDuong> ?? new List<TuyenDuong>();
+    var loi = ViewBag.Loi as string;
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Tạo đơn hàng mới</h1>
+        <p class="phu">Nhập thông tin đơn, sau đó gán tài xế ở bước tiếp theo.</p>
+    </div>
+    <a class="nut-phu" href="/quanly/don-hang">‹ Quay lại danh sách</a>
+</div>
+
+<div class="khung" style="max-width:560px">
+    @if (!string.IsNullOrEmpty(loi))
+    {
+        <p style="color:#c62828;margin-top:0">@loi</p>
+    }
+
+    <form method="post" action="/quanly/don-hang/tao">
+        @Html.AntiForgeryToken()
+
+        <label class="nho">Tuyến đường</label>
+        <select name="TuyenDuongId" required style="width:100%;padding:9px;margin:6px 0 14px;border:1px solid #b0bec5;border-radius:8px;">
+            <option value="">-- Chọn tuyến --</option>
+            @foreach (var t in dsTuyen)
+            {
+                var daChon = Model.TuyenDuongId == t.Id ? "selected" : "";
+                @Html.Raw($"<option value=\"{t.Id}\" {daChon}>{t.TenTuyen} ({t.DiemDi} → {t.DiemDen})</option>")
+            }
+        </select>
+
+        <label class="nho">Khách hàng</label>
+        <input name="TenKhachHang" required value="@Model.TenKhachHang"
+               style="width:100%;padding:9px;margin:6px 0 14px;border:1px solid #b0bec5;border-radius:8px;" />
+
+        <label class="nho">Loại hàng</label>
+        <input name="LoaiHang" required value="@Model.LoaiHang"
+               style="width:100%;padding:9px;margin:6px 0 14px;border:1px solid #b0bec5;border-radius:8px;" />
+
+        <label class="nho">Doanh thu dự kiến (không bắt buộc)</label>
+        <input type="number" name="DoanhThu" step="1000" min="0" value="@Model.DoanhThu"
+               style="width:100%;padding:9px;margin:6px 0 14px;border:1px solid #b0bec5;border-radius:8px;" />
+
+        <label class="nho">Ghi chú (không bắt buộc)</label>
+        <input name="GhiChu" value="@Model.GhiChu"
+               style="width:100%;padding:9px;margin:6px 0 14px;border:1px solid #b0bec5;border-radius:8px;" />
+
+        <label class="nho">Ngày chạy</label>
+        <input type="date" name="NgayChay" value="@Model.NgayChay.ToString("yyyy-MM-dd")" required
+               style="width:100%;padding:9px;margin:6px 0 18px;border:1px solid #b0bec5;border-radius:8px;" />
+
+        <button type="submit" class="nut-thoat" style="background:var(--jade);border-color:var(--jade);width:100%;padding:11px;">
+            Tạo đơn hàng
+        </button>
+    </form>
+</div>
