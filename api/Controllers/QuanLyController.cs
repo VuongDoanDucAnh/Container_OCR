@@ -14,10 +14,12 @@ namespace DoAnOlympics.Api.Controllers;
 public class QuanLyController : Controller
 {
     private readonly AppDbContext _db;
+    private readonly IAnhLuuTruService _anhLuuTru;
 
-    public QuanLyController(AppDbContext db)
+    public QuanLyController(AppDbContext db, IAnhLuuTruService anhLuuTru)
     {
         _db = db;
+        _anhLuuTru = anhLuuTru;
     }
 
     [HttpGet("")]
@@ -274,7 +276,7 @@ public class QuanLyController : Controller
 
     private async Task<List<DonHangItem>> LayDonTheoNgayAsync(DateTime ngay)
     {
-        return await _db.DonHangs
+        var danhSach = await _db.DonHangs
             .AsNoTracking()
             .Where(d => d.NgayChay == ngay)
             .OrderBy(d => d.MaDon)
@@ -294,16 +296,34 @@ public class QuanLyController : Controller
                 Chuyens = d.PhanCongChuyens
                     .Select(p => new ChuyenItem
                     {
+                        PhanCongId = p.Id,
                         MaTaiXe = p.Driver!.MaTaiXe,
                         HoTenTaiXe = p.Driver!.HoTen,
                         TrangThai = p.TrangThai,
                         ThoiGianBatDau = p.ThoiGianBatDau,
                         ThoiGianKetThuc = p.ThoiGianKetThuc,
+                        NguoiKyTen = p.NguoiKyTen,
+                        CoAnhGiaoHang = p.AnhGiaoHang != null,
+                        OdoBatDau = p.OdoBatDau,
+                        OdoKetThuc = p.OdoKetThuc,
+                        AnhOdoBatDauPublicId = p.AnhOdoBatDauPublicId,
+                        AnhOdoKetThucPublicId = p.AnhOdoKetThucPublicId,
                         MaContainerDaQuet = p.ContainerRecords.Select(c => c.MaContainer).ToList()
                     })
                     .ToList()
             })
             .ToListAsync();
+
+        foreach (var don in danhSach)
+        {
+            foreach (var chuyen in don.Chuyens)
+            {
+                chuyen.AnhOdoBatDauUrl = _anhLuuTru.TaoUrl(chuyen.AnhOdoBatDauPublicId);
+                chuyen.AnhOdoKetThucUrl = _anhLuuTru.TaoUrl(chuyen.AnhOdoKetThucPublicId);
+            }
+        }
+
+        return danhSach;
     }
 
     [HttpGet("don-hang/chu-ky/{id:int}")]
@@ -322,5 +342,19 @@ public class QuanLyController : Controller
         if (don?.AnhChuKyKhachHang is null) return NotFound();
 
         return File(don.AnhChuKyKhachHang, don.AnhChuKyLoaiNoiDung ?? "image/png");
+    }
+
+    [HttpGet("don-hang/anh-giao-hang/{phanCongId:int}")]
+    public async Task<IActionResult> XemAnhGiaoHang(int phanCongId)
+    {
+        var chuyen = await _db.PhanCongChuyens
+            .AsNoTracking()
+            .Where(p => p.Id == phanCongId && p.AnhGiaoHang != null)
+            .Select(p => new { p.AnhGiaoHang, p.AnhGiaoHangLoaiNoiDung })
+            .FirstOrDefaultAsync();
+
+        if (chuyen?.AnhGiaoHang is null) return NotFound();
+
+        return File(chuyen.AnhGiaoHang, chuyen.AnhGiaoHangLoaiNoiDung ?? "image/jpeg");
     }
 }

@@ -1,3 +1,5 @@
+using System.ComponentModel.DataAnnotations;
+
 namespace DoAnOlympics.Api.Models;
 
 public enum TrangThaiChuyen
@@ -19,9 +21,17 @@ public class PhanCongChuyen
     public DateTime? ThoiGianKetThuc { get; set; }
     public List<ContainerRecord> ContainerRecords { get; set; } = new();
 
-    // Dữ liệu e-POD mới bổ sung
     public byte[]? AnhGiaoHang { get; set; }
     public string? AnhGiaoHangLoaiNoiDung { get; set; }
     public byte[]? AnhChuKy { get; set; }
     public string? NguoiKyTen { get; set; }
+
+    public int? OdoBatDau { get; set; }
+    public int? OdoKetThuc { get; set; }
+
+    [MaxLength(200)]
+    public string? AnhOdoBatDauPublicId { get; set; }
+
+    [MaxLength(200)]
+    public string? AnhOdoKetThucPublicId { get; set; }
 }

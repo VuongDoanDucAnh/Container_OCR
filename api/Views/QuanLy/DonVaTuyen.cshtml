@@ -108,6 +108,48 @@ else
                                             {
                                                 <div class="nho">Đã quét: @string.Join(", ", c.MaContainerDaQuet)</div>
                                             }
+                                            @if (!string.IsNullOrWhiteSpace(c.NguoiKyTen))
+                                            {
+                                                <div class="nho">Người ký nhận: @c.NguoiKyTen</div>
+                                            }
+                                            @if (c.CoAnhGiaoHang)
+                                            {
+                                                <div class="nho">
+                                                    <a href="/quanly/don-hang/anh-giao-hang/@c.PhanCongId" target="_blank">📄 Xem ảnh giao hàng</a>
+                                                </div>
+                                            }
+                                            @if (c.OdoBatDau.HasValue || c.OdoKetThuc.HasValue)
+                                            {
+                                                <div class="nho">
+                                                    ODO: @(c.OdoBatDau.HasValue ? c.OdoBatDau.Value.ToString("N0", vn) : "?") → @(c.OdoKetThuc.HasValue ? c.OdoKetThuc.Value.ToString("N0", vn) : "?")
+                                                </div>
+                                            }
+                                            @if (c.KmThucChay.HasValue)
+                                            {
+                                                var lechPhanTram = d.KhoangCachKm > 0
+                                                    ? Math.Abs(c.KmThucChay.Value - d.KhoangCachKm) / d.KhoangCachKm * 100
+                                                    : 0;
+                                                <div class="nho">
+                                                    Thực chạy @c.KmThucChay.Value.ToString("N0", vn) km (tuyến @d.KhoangCachKm km)
+                                                    @if (lechPhanTram > 30)
+                                                    {
+                                                        <span class="huy-hieu cho">Lệch @lechPhanTram.ToString("0")%</span>
+                                                    }
+                                                </div>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(c.AnhOdoBatDauUrl) || !string.IsNullOrWhiteSpace(c.AnhOdoKetThucUrl))
+                                            {
+                                                <div class="nho">
+                                                    @if (!string.IsNullOrWhiteSpace(c.AnhOdoBatDauUrl))
+                                                    {
+                                                        <a href="@c.AnhOdoBatDauUrl" target="_blank">📷 ODO đầu</a>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(c.AnhOdoKetThucUrl))
+                                                    {
+                                                        <a href="@c.AnhOdoKetThucUrl" target="_blank">📷 ODO cuối</a>
+                                                    }
+                                                </div>
+                                            }
                                         </div>
                                     }
                                 }

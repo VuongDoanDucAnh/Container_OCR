@@ -105,6 +105,9 @@ public partial class KyNhanPage : ContentPage
             if (!tiepTuc) return;
         }
 
+        var odo = await OdoHelper.ChupVaXacNhanAsync(this, "ODO lúc kết thúc chuyến");
+        if (odo is null) return;
+
         string? chuKyBase64 = null;
         if (_drawable.NetVes.Count > 0)
         {
@@ -139,7 +142,9 @@ public partial class KyNhanPage : ContentPage
                 nguoiKyTen = nguoiKy,
                 anhGiaoHangBase64 = _anhBienBanBytes != null ? Convert.ToBase64String(_anhBienBanBytes) : null,
                 anhGiaoHangLoaiNoiDung = "image/jpeg",
-                anhChuKyBase64 = chuKyBase64
+                anhChuKyBase64 = chuKyBase64,
+                odoKetThuc = odo.Odo,
+                anhOdoPublicId = odo.AnhPublicId
             };
 
             yeuCau.Content = JsonContent.Create(body);
@@ -152,7 +157,9 @@ public partial class KyNhanPage : ContentPage
             }
             else
             {
-                await DisplayAlert("Thất bại", "Không thể cập nhật chuyến. Kéo làm mới lại danh sách.", "OK");
+                var thongBaoLoi = await OdoHelper.DocThongBaoLoiAsync(phanHoi)
+                    ?? "Không thể cập nhật chuyến. Kéo làm mới lại danh sách.";
+                await DisplayAlert("Thất bại", thongBaoLoi, "OK");
             }
         }
         catch (Exception ex)

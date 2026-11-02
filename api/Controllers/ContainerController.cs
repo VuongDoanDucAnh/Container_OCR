@@ -19,6 +19,7 @@ public class ContainerController : ControllerBase
     private readonly IGoogleSheetsService _sheetsService;
     private readonly IContainerRecordRepository _recordRepo;
     private readonly IDriverRepository _driverRepo;
+    private readonly IAnhLuuTruService _anhLuuTru;
     private readonly AppDbContext _db;
 
     private const int DungSaiPhut = 5;
@@ -28,12 +29,14 @@ public class ContainerController : ControllerBase
         IGoogleSheetsService sheetsService,
         IContainerRecordRepository recordRepo,
         IDriverRepository driverRepo,
+        IAnhLuuTruService anhLuuTru,
         AppDbContext db)
     {
         _geminiClient = geminiClient;
         _sheetsService = sheetsService;
         _recordRepo = recordRepo;
         _driverRepo = driverRepo;
+        _anhLuuTru = anhLuuTru;
         _db = db;
     }
 
@@ -190,6 +193,8 @@ public class ContainerController : ControllerBase
             kinhDoHopLe = kinhDo;
         }
 
+        var anhPublicId = await _anhLuuTru.TaiLenAsync(anhBytes, "container");
+
         var record = new ContainerRecord
         {
             DriverId = driverId,
@@ -202,6 +207,7 @@ public class ContainerController : ControllerBase
             MaYeuCau = maYeuCau,
             ViDo = viDoHopLe,
             KinhDo = kinhDoHopLe,
+            AnhPublicId = anhPublicId,
             ThoiGianNhanServer = bayGio
         };
 

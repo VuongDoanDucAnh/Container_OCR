@@ -100,16 +100,18 @@ public partial class TrangChuPage : ContentPage
 
         try
         {
-            bool thanhCong = await GoiApiChuyenAsync(chuyen.PhanCongId, "bat-dau");
+            var odo = await OdoHelper.ChupVaXacNhanAsync(this, "ODO lúc bắt đầu chuyến");
+            if (odo is null) return;
 
-            if (thanhCong)
+            var thongBaoLoi = await GuiBatDauAsync(chuyen.PhanCongId, odo);
+
+            if (thongBaoLoi is null)
             {
                 await TaiDuLieuAsync(hienSpinnerToanTrang: false);
             }
             else
             {
-                await DisplayAlertAsync("Không thực hiện được",
-                    "Chuyến có thể đã được cập nhật. Hãy kéo xuống để làm mới danh sách.", "OK");
+                await DisplayAlertAsync("Không thực hiện được", thongBaoLoi, "OK");
             }
         }
         finally
@@ -125,16 +127,33 @@ public partial class TrangChuPage : ContentPage
         await Navigation.PushAsync(new KyNhanPage(chuyen.PhanCongId, chuyen.MaDon ?? string.Empty, chuyen.KhachHang ?? string.Empty));
     }
 
-    private async Task<bool> GoiApiChuyenAsync(int phanCongId, string hanhDong)
+    private async Task<string?> GuiBatDauAsync(int phanCongId, KetQuaOdo odo)
     {
-        var token = await SecureStorage.Default.GetAsync("jwt_token");
+        try
+        {
+            var token = await SecureStorage.Default.GetAsync("jwt_token");
 
-        using var yeuCau = new HttpRequestMessage(
-            HttpMethod.Post, $"{ApiBaseUrl}/api/trangchu/chuyen/{phanCongId}/{hanhDong}");
-        yeuCau.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+            using var yeuCau = new HttpRequestMessage(
+                HttpMethod.Post, $"{ApiBaseUrl}/api/trangchu/chuyen/{phanCongId}/bat-dau")
+            {
+                Content = JsonContent.Create(new
+                {
+                    odoBatDau = odo.Odo,
+                    anhOdoPublicId = odo.AnhPublicId
+                })
+            };
+            yeuCau.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
 
-        var phanHoi = await _httpClient.SendAsync(yeuCau);
-        return phanHoi.IsSuccessStatusCode;
+            using var phanHoi = await _httpClient.SendAsync(yeuCau);
+            if (phanHoi.IsSuccessStatusCode) return null;
+
+            return await OdoHelper.DocThongBaoLoiAsync(phanHoi)
+                ?? "Chuyến có thể đã được cập nhật. Hãy kéo xuống để làm mới danh sách.";
+        }
+        catch (Exception)
+        {
+            return "Không kết nối được máy chủ, vui lòng thử lại.";
+        }
     }
 }
 

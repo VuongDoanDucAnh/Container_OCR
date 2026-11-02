@@ -264,6 +264,14 @@ namespace DoAnOlympics.Api.Migrations
                         .HasMaxLength(50)
                         .HasColumnType("nvarchar(50)");
 
+                    b.Property<string>("AnhOdoBatDauPublicId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
+                    b.Property<string>("AnhOdoKetThucPublicId")
+                        .HasMaxLength(200)
+                        .HasColumnType("nvarchar(200)");
+
                     b.Property<int>("DonHangId")
                         .HasColumnType("int");
 
@@ -273,6 +281,12 @@ namespace DoAnOlympics.Api.Migrations
                     b.Property<string>("NguoiKyTen")
                         .HasMaxLength(100)
                         .HasColumnType("nvarchar(100)");
+
+                    b.Property<int?>("OdoBatDau")
+                        .HasColumnType("int");
+
+                    b.Property<int?>("OdoKetThuc")
+                        .HasColumnType("int");
 
                     b.Property<DateTime?>("ThoiGianBatDau")
                         .HasColumnType("datetime2");

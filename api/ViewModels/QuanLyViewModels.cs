@@ -4,12 +4,27 @@ namespace DoAnOlympics.Api.ViewModels;
 
 public class ChuyenItem
 {
+    public int PhanCongId { get; set; }
     public string MaTaiXe { get; set; } = string.Empty;
     public string HoTenTaiXe { get; set; } = string.Empty;
     public TrangThaiChuyen TrangThai { get; set; }
     public DateTime? ThoiGianBatDau { get; set; }
     public DateTime? ThoiGianKetThuc { get; set; }
     public List<string> MaContainerDaQuet { get; set; } = new();
+
+    public string? NguoiKyTen { get; set; }
+    public bool CoAnhGiaoHang { get; set; }
+
+    public int? OdoBatDau { get; set; }
+    public int? OdoKetThuc { get; set; }
+    public string? AnhOdoBatDauPublicId { get; set; }
+    public string? AnhOdoKetThucPublicId { get; set; }
+    public string? AnhOdoBatDauUrl { get; set; }
+    public string? AnhOdoKetThucUrl { get; set; }
+
+    public int? KmThucChay => OdoBatDau.HasValue && OdoKetThuc.HasValue
+        ? OdoKetThuc.Value - OdoBatDau.Value
+        : null;
 }
 
 public class DonHangItem

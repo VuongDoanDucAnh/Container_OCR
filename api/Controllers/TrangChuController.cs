@@ -5,6 +5,7 @@ using Microsoft.EntityFrameworkCore;
 using DoAnOlympics.Api.Data;
 using DoAnOlympics.Api.DTOs;
 using DoAnOlympics.Api.Models;
+using DoAnOlympics.Api.Services;
 
 namespace DoAnOlympics.Api.Controllers;
 
@@ -13,11 +14,19 @@ namespace DoAnOlympics.Api.Controllers;
 [Authorize]
 public class TrangChuController : ControllerBase
 {
-    private readonly AppDbContext _db;
+    private const long GioiHanAnhByte = 10 * 1024 * 1024;
+    private const int OdoToiDa = 9_999_999;
+    private const string ThuMucAnhOdo = "odo";
 
-    public TrangChuController(AppDbContext db)
+    private readonly AppDbContext _db;
+    private readonly IGeminiOdoClient _odoClient;
+    private readonly IAnhLuuTruService _anhLuuTru;
+
+    public TrangChuController(AppDbContext db, IGeminiOdoClient odoClient, IAnhLuuTruService anhLuuTru)
     {
         _db = db;
+        _odoClient = odoClient;
+        _anhLuuTru = anhLuuTru;
     }
 
     [HttpGet]
@@ -88,8 +97,97 @@ public class TrangChuController : ControllerBase
         });
     }
 
+    [HttpPost("doc-odo")]
+    [Consumes("multipart/form-data")]
+    public async Task<IActionResult> DocOdo(IFormFile anh)
+    {
+        if (anh is null || anh.Length == 0)
+        {
+            return BadRequest(new DocOdoResponseDto
+            {
+                ThanhCong = false,
+                Loi = "Chưa có ảnh đồng hồ được gửi lên",
+                HuongGiaiQuyet = "Vui lòng chụp ảnh đồng hồ công-tơ-mét",
+                MaLoi = "CHUA_CO_ANH"
+            });
+        }
+
+        if (anh.Length > GioiHanAnhByte)
+        {
+            return BadRequest(new DocOdoResponseDto
+            {
+                ThanhCong = false,
+                Loi = "Ảnh quá lớn",
+                HuongGiaiQuyet = "Vui lòng chụp lại với độ phân giải thấp hơn",
+                MaLoi = "ANH_QUA_LON"
+            });
+        }
+
+        using var ms = new MemoryStream();
+        await anh.CopyToAsync(ms);
+        var anhBytes = ms.ToArray();
+
+        DocOdoKetQuaAi ketQuaAi;
+        try
+        {
+            ketQuaAi = await _odoClient.DocOdoAsync(anhBytes, anh.ContentType);
+        }
+        catch (Exception)
+        {
+            var anhIdKhiLoi = await _anhLuuTru.TaiLenAsync(anhBytes, ThuMucAnhOdo);
+            return StatusCode(503, new DocOdoResponseDto
+            {
+                ThanhCong = false,
+                AnhPublicId = anhIdKhiLoi,
+                Loi = "Hệ thống đọc đồng hồ đang tạm gián đoạn",
+                HuongGiaiQuyet = "Bạn có thể nhập tay số ODO đang hiển thị trên đồng hồ",
+                MaLoi = "LOI_DICH_VU_AI"
+            });
+        }
+
+        if (!ketQuaAi.LaDongHoOdo)
+        {
+            return Ok(new DocOdoResponseDto
+            {
+                ThanhCong = false,
+                LaDongHoOdo = false,
+                Loi = "Ảnh gửi lên không phải đồng hồ công-tơ-mét",
+                HuongGiaiQuyet = "Hãy chụp rõ mặt đồng hồ, thấy đủ dãy số ODO",
+                MaLoi = "KHONG_PHAI_DONG_HO"
+            });
+        }
+
+        var anhPublicId = await _anhLuuTru.TaiLenAsync(anhBytes, ThuMucAnhOdo);
+
+        var canhBao = new List<string>();
+        if (!ketQuaAi.Odo.HasValue)
+        {
+            canhBao.Add("Không đọc rõ số ODO, vui lòng nhập tay");
+        }
+        else if (ketQuaAi.TruongNghiNgo.Count > 0)
+        {
+            canhBao.Add("Số ODO có thể chưa chính xác, vui lòng kiểm tra lại");
+        }
+
+        if (string.Equals(ketQuaAi.DonVi, "mi", StringComparison.OrdinalIgnoreCase))
+        {
+            canhBao.Add("Đồng hồ đang hiển thị dặm, vui lòng đối chiếu lại đơn vị km");
+        }
+
+        return Ok(new DocOdoResponseDto
+        {
+            ThanhCong = true,
+            LaDongHoOdo = true,
+            Odo = ketQuaAi.Odo,
+            DonVi = ketQuaAi.DonVi,
+            AnhPublicId = anhPublicId,
+            CanhBao = canhBao.Count == 0 ? null : string.Join(". ", canhBao),
+            TruongNghiNgo = ketQuaAi.TruongNghiNgo
+        });
+    }
+
     [HttpPost("chuyen/{id:int}/bat-dau")]
-    public async Task<IActionResult> BatDau(int id)
+    public async Task<IActionResult> BatDau(int id, [FromBody] BatDauChuyenDto? dto)
     {
         int driverId = LayDriverId();
 
@@ -110,8 +208,28 @@ public class TrangChuController : ControllerBase
                 "SAI_TRANG_THAI"));
         }
 
+        if (dto?.OdoBatDau is not int odoBatDau || !OdoHopLe(odoBatDau))
+        {
+            return BadRequest(Loi(
+                "Vui lòng chụp và xác nhận số ODO lúc bắt đầu chuyến",
+                "Chụp ảnh đồng hồ công-tơ-mét rồi thử lại",
+                "THIEU_ODO_BAT_DAU"));
+        }
+
+        if (!PublicIdOdoHopLe(dto.AnhOdoPublicId))
+        {
+            return BadRequest(Loi(
+                "Ảnh ODO không hợp lệ",
+                "Vui lòng chụp lại ảnh đồng hồ",
+                "ANH_ODO_KHONG_HOP_LE"));
+        }
+
         chuyen.TrangThai = TrangThaiChuyen.DangChay;
         chuyen.ThoiGianBatDau = DateTime.UtcNow;
+        chuyen.OdoBatDau = odoBatDau;
+        chuyen.AnhOdoBatDauPublicId = string.IsNullOrWhiteSpace(dto.AnhOdoPublicId)
+            ? null
+            : dto.AnhOdoPublicId.Trim();
         await _db.SaveChangesAsync();
 
         return Ok(new { thanhCong = true, trangThai = chuyen.TrangThai.ToString() });
@@ -139,54 +257,82 @@ public class TrangChuController : ControllerBase
                 "SAI_TRANG_THAI"));
         }
 
+        if (dto?.OdoKetThuc is not int odoKetThuc || !OdoHopLe(odoKetThuc))
+        {
+            return BadRequest(Loi(
+                "Vui lòng chụp và xác nhận số ODO lúc kết thúc chuyến",
+                "Chụp ảnh đồng hồ công-tơ-mét rồi thử lại",
+                "THIEU_ODO_KET_THUC"));
+        }
+
+        if (chuyen.OdoBatDau.HasValue && odoKetThuc < chuyen.OdoBatDau.Value)
+        {
+            return BadRequest(Loi(
+                $"ODO kết thúc ({odoKetThuc}) nhỏ hơn ODO lúc bắt đầu ({chuyen.OdoBatDau.Value})",
+                "Kiểm tra lại số ODO vừa nhập",
+                "ODO_KET_THUC_NHO_HON_BAT_DAU"));
+        }
+
+        if (!PublicIdOdoHopLe(dto.AnhOdoPublicId))
+        {
+            return BadRequest(Loi(
+                "Ảnh ODO không hợp lệ",
+                "Vui lòng chụp lại ảnh đồng hồ",
+                "ANH_ODO_KHONG_HOP_LE"));
+        }
+
         byte[]? anhChuKy = null;
         byte[]? anhGiaoHang = null;
 
-        if (dto != null)
+        if (!string.IsNullOrWhiteSpace(dto.AnhChuKyBase64)
+            && !TryGiaiMaBase64(dto.AnhChuKyBase64, out anhChuKy))
         {
-            if (!string.IsNullOrWhiteSpace(dto.AnhChuKyBase64)
-                && !TryGiaiMaBase64(dto.AnhChuKyBase64, out anhChuKy))
-            {
-                return BadRequest(Loi(
-                    "Ảnh chữ ký gửi lên không hợp lệ",
-                    "Vui lòng ký lại và xác nhận lần nữa",
-                    "ANH_CHU_KY_KHONG_HOP_LE"));
-            }
+            return BadRequest(Loi(
+                "Ảnh chữ ký gửi lên không hợp lệ",
+                "Vui lòng ký lại và xác nhận lần nữa",
+                "ANH_CHU_KY_KHONG_HOP_LE"));
+        }
 
-            if (!string.IsNullOrWhiteSpace(dto.AnhGiaoHangBase64)
-                && !TryGiaiMaBase64(dto.AnhGiaoHangBase64, out anhGiaoHang))
-            {
-                return BadRequest(Loi(
-                    "Ảnh biên bản giao hàng gửi lên không hợp lệ",
-                    "Vui lòng chụp lại biên bản và xác nhận lần nữa",
-                    "ANH_GIAO_HANG_KHONG_HOP_LE"));
-            }
+        if (!string.IsNullOrWhiteSpace(dto.AnhGiaoHangBase64)
+            && !TryGiaiMaBase64(dto.AnhGiaoHangBase64, out anhGiaoHang))
+        {
+            return BadRequest(Loi(
+                "Ảnh biên bản giao hàng gửi lên không hợp lệ",
+                "Vui lòng chụp lại biên bản và xác nhận lần nữa",
+                "ANH_GIAO_HANG_KHONG_HOP_LE"));
         }
 
         chuyen.TrangThai = TrangThaiChuyen.HoanThanh;
         chuyen.ThoiGianKetThuc = DateTime.UtcNow;
+        chuyen.OdoKetThuc = odoKetThuc;
+        chuyen.AnhOdoKetThucPublicId = string.IsNullOrWhiteSpace(dto.AnhOdoPublicId)
+            ? null
+            : dto.AnhOdoPublicId.Trim();
 
-        if (dto != null)
+        if (!string.IsNullOrWhiteSpace(dto.NguoiKyTen))
+            chuyen.NguoiKyTen = dto.NguoiKyTen.Trim();
+
+        if (anhChuKy != null)
+            chuyen.AnhChuKy = anhChuKy;
+
+        if (anhGiaoHang != null)
         {
-            if (!string.IsNullOrWhiteSpace(dto.NguoiKyTen))
-                chuyen.NguoiKyTen = dto.NguoiKyTen.Trim();
-
-            if (anhChuKy != null)
-                chuyen.AnhChuKy = anhChuKy;
-
-            if (anhGiaoHang != null)
-            {
-                chuyen.AnhGiaoHang = anhGiaoHang;
-                chuyen.AnhGiaoHangLoaiNoiDung = string.IsNullOrWhiteSpace(dto.AnhGiaoHangLoaiNoiDung)
-                    ? "image/jpeg"
-                    : dto.AnhGiaoHangLoaiNoiDung.Trim();
-            }
+            chuyen.AnhGiaoHang = anhGiaoHang;
+            chuyen.AnhGiaoHangLoaiNoiDung = string.IsNullOrWhiteSpace(dto.AnhGiaoHangLoaiNoiDung)
+                ? "image/jpeg"
+                : dto.AnhGiaoHangLoaiNoiDung.Trim();
         }
 
         await _db.SaveChangesAsync();
 
         return Ok(new { thanhCong = true, trangThai = chuyen.TrangThai.ToString() });
     }
+
+    private static bool OdoHopLe(int odo) => odo is >= 0 and <= OdoToiDa;
+
+    private static bool PublicIdOdoHopLe(string? publicId) =>
+        string.IsNullOrWhiteSpace(publicId)
+        || (publicId.Length <= 200 && publicId.StartsWith(ThuMucAnhOdo + "/", StringComparison.Ordinal));
 
     private static bool TryGiaiMaBase64(string chuoi, out byte[]? duLieu)
     {
