@@ -7,7 +7,7 @@ namespace App_OCR;
 public partial class ThongBaoPage : ContentPage
 {
     private readonly HttpClient _httpClient = new();
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
 
     private readonly ObservableCollection<TinNhanItem> _danhSachTin = new();
     private readonly (string Hien, string? Ma)[] _dsLoaiSuCo =

@@ -44,10 +44,10 @@
                         CornerRadius="26" Padding="0" BackgroundColor="#33FFFFFF" TextColor="White" IsVisible="False" Clicked="BtnChupLai_Clicked" />
             </Grid>
 
-            <Picker Grid.Row="2" x:Name="PkLoaiHinh" Title="Loại hình chuyến (không bắt buộc)"
+            <Picker Grid.Row="2" x:Name="PkLoaiHinh" Title="Loại hình chuyến"
                     TitleColor="#80CBC4" TextColor="White" BackgroundColor="Transparent" />
 
-            <Entry Grid.Row="3" x:Name="EdDiaDiem" Placeholder="Địa điểm bãi / cảng (không bắt buộc)"
+            <Entry Grid.Row="3" x:Name="EdDiaDiem" Placeholder="Địa điểm bãi / cảng"
                    PlaceholderColor="#80CBC4" TextColor="White" BackgroundColor="#22FFFFFF" HeightRequest="40" Margin="0,0,0,4" />
         </Grid>
     </Grid>

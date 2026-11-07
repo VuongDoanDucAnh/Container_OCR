@@ -5,48 +5,42 @@
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
     xmlns:local="clr-namespace:App_OCR"
     Shell.FlyoutBehavior="Disabled"
-    Shell.TabBarBackgroundColor="{StaticResource JadePrimary}"
-    Shell.TabBarTitleColor="White"
-    Shell.TabBarUnselectedColor="{StaticResource JadeSoft}"
-    Shell.TabBarForegroundColor="White">
+    Shell.BackgroundColor="{StaticResource Primary}"
+    Shell.ForegroundColor="White"
+    Shell.TitleColor="White"
+    Shell.TabBarBackgroundColor="White"
+    Shell.TabBarTitleColor="{StaticResource Primary}"
+    Shell.TabBarForegroundColor="{StaticResource Primary}"
+    Shell.TabBarUnselectedColor="{StaticResource Gray500}">
 
     <Shell.TitleView>
-        <HorizontalStackLayout Spacing="10" VerticalOptions="Center" Padding="4,0,0,0">
-            <Border StrokeShape="RoundRectangle 16"
-                    Stroke="Transparent"
-                    BackgroundColor="White"
-                    WidthRequest="32"
-                    HeightRequest="32"
-                    Padding="0">
-                <Label Text="CT"
-                       FontSize="13"
-                       FontAttributes="Bold"
-                       TextColor="{StaticResource JadeDark}"
-                       HorizontalOptions="Center"
-                       VerticalOptions="Center" />
-            </Border>
-            <Label Text="Container Track"
-                   FontSize="17"
-                   FontAttributes="Bold"
+        <HorizontalStackLayout Spacing="8" VerticalOptions="Center" Padding="4,0,0,0">
+            <Image Source="logo_aoda.png"
+                   WidthRequest="28"
+                   HeightRequest="28"
+                   VerticalOptions="Center" />
+            <Label Text="AoDA"
+                   FontFamily="BeVietnamBold"
+                   FontSize="20"
                    TextColor="White"
                    VerticalOptions="Center" />
         </HorizontalStackLayout>
     </Shell.TitleView>
 
     <TabBar>
-        <Tab Title="Trang chủ" Route="trangchu">
+        <Tab Title="Trang chủ" Icon="tab_trangchu.png" Route="trangchu">
             <ShellContent ContentTemplate="{DataTemplate local:TrangChuPage}" />
         </Tab>
-        <Tab Title="Lịch sử" Route="lichsu">
+        <Tab Title="Lịch sử" Icon="tab_lichsu.png" Route="lichsu">
             <ShellContent ContentTemplate="{DataTemplate local:LichSuPage}" />
         </Tab>
-        <Tab Title="Chụp hình" Route="scan">
+        <Tab Title="Chụp hình" Icon="tab_chuphinh.png" Route="scan">
             <ShellContent ContentTemplate="{DataTemplate local:ScanPage}" />
         </Tab>
-        <Tab Title="Thông báo" Route="thongbao">
+        <Tab Title="Thông báo" Icon="tab_thongbao.png" Route="thongbao">
             <ShellContent ContentTemplate="{DataTemplate local:ThongBaoPage}" />
         </Tab>
-        <Tab Title="Cá nhân" Route="canhan">
+        <Tab Title="Cá nhân" Icon="tab_canhan.png" Route="canhan">
             <ShellContent ContentTemplate="{DataTemplate local:CaNhanPage}" />
         </Tab>
     </TabBar>

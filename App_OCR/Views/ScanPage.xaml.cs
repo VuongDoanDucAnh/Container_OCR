@@ -5,7 +5,7 @@ namespace App_OCR;
 
 public partial class ScanPage : ContentPage
 {
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
     private readonly HttpClient _httpClient = new();
     private readonly HangDoiAnh _hangDoi = new();
     private readonly DongBoAnh _dongBo;

@@ -14,7 +14,7 @@ public class KetQuaOdo
 
 public static class OdoHelper
 {
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
     private static readonly TimeSpan ThoiGianCho = TimeSpan.FromSeconds(45);
     private static readonly HttpClient Http = new();
 

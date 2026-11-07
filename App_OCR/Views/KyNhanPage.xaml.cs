@@ -30,7 +30,7 @@ public partial class KyNhanPage : ContentPage
 {
     private readonly int _phanCongId;
     private readonly HttpClient _httpClient = new();
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
     private readonly ChuKyDrawable _drawable = new();
     private List<PointF>? _netHienTai;
     private byte[]? _anhBienBanBytes;

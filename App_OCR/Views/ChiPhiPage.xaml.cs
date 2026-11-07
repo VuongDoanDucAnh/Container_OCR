@@ -9,7 +9,7 @@ namespace App_OCR;
 public partial class ChiPhiPage : ContentPage
 {
     private readonly HttpClient _httpClient = new();
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
     private static readonly TimeSpan ThoiGianChoDocHoaDon = TimeSpan.FromSeconds(45);
 
     public ChiPhiPage()

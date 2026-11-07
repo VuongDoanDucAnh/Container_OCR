@@ -2,7 +2,7 @@
 
 public static class DongBoNen
 {
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
     private static readonly HttpClient Http = new();
     private static readonly Lazy<DongBoAnh> DongBo = new(() => new DongBoAnh(new HangDoiAnh(), Http, ApiBaseUrl));
     private static bool _daBat;

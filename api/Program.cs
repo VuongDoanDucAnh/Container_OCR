@@ -1,4 +1,5 @@
 using System.Text;
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.IdentityModel.Tokens;
@@ -10,6 +11,8 @@ var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
+
+builder.Services.AddMemoryCache();
 
 builder.Services.AddScoped<IDriverRepository, DriverRepository>();
 builder.Services.AddScoped<IContainerRecordRepository, ContainerRecordRepository>();
@@ -25,7 +28,7 @@ builder.Services.AddScoped<IJwtService, JwtService>();
 string jwtSigningKey = builder.Configuration["Jwt:SigningKey"]
     ?? "khoa-tam-de-build-khong-loi---HAY-THAY-BANG-USER-SECRETS-THUC-TE";
 
-builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
+var xacThuc = builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>
     {
         options.TokenValidationParameters = new TokenValidationParameters
@@ -49,6 +52,31 @@ builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         options.ExpireTimeSpan = TimeSpan.FromHours(8);
         options.SlidingExpiration = true;
     });
+
+string googleClientId = builder.Configuration["Google:ClientId"] ?? string.Empty;
+string googleClientSecret = builder.Configuration["Google:ClientSecret"] ?? string.Empty;
+
+if (googleClientId.Length > 0 && googleClientSecret.Length > 0)
+{
+    xacThuc
+        .AddCookie("GoogleNgoai", options =>
+        {
+            options.Cookie.Name = "google.ngoai";
+            options.Cookie.HttpOnly = true;
+            options.Cookie.SameSite = SameSiteMode.Lax;
+            options.ExpireTimeSpan = TimeSpan.FromMinutes(5);
+        })
+        .AddGoogle("Google", options =>
+        {
+            options.SignInScheme = "GoogleNgoai";
+            options.ClientId = googleClientId;
+            options.ClientSecret = googleClientSecret;
+            options.CallbackPath = "/signin-google";
+            options.CorrelationCookie.SameSite = SameSiteMode.Lax;
+            options.CorrelationCookie.SecurePolicy = CookieSecurePolicy.SameAsRequest;
+            options.ClaimActions.MapJsonKey("email_verified", "email_verified");
+        });
+}
 
 builder.Services.AddAuthorization();
 builder.Services.AddControllersWithViews();
