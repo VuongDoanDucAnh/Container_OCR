@@ -5,7 +5,7 @@ namespace App_OCR;
 public partial class RegisterPage : ContentPage
 {
     private readonly HttpClient _httpClient = new();
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
 
     public RegisterPage()
     {

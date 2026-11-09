@@ -1,0 +1,193 @@
+﻿@model DonVaTuyenViewModel
+@{
+    ViewData["Trang"] = "don";
+    ViewData["TieuDe"] = "Đơn hàng và tuyến";
+    var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+    var truoc = Model.Ngay.AddDays(-1).ToString("yyyy-MM-dd");
+    var sau = Model.Ngay.AddDays(1).ToString("yyyy-MM-dd");
+    var hienTai = Model.Ngay.ToString("yyyy-MM-dd");
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Đơn hàng &amp; tuyến đường</h1>
+        <p class="phu">@Model.Ngay.ToString("dddd, dd/MM/yyyy", vn) · @Model.Don.Count đơn</p>
+    </div>
+    <form method="get" action="/quanly/don-hang" class="bo-loc-ngay">
+        <a class="nut-phu" href="/quanly/don-hang?ngay=@truoc">‹ Hôm trước</a>
+        <input type="date" name="ngay" value="@hienTai" onchange="this.form.submit()" />
+        <a class="nut-phu" href="/quanly/don-hang?ngay=@sau">Hôm sau ›</a>
+        <a class="nut-phu" href="/quanly/don-hang">Hôm nay</a>
+        <a class="nut-phu" href="/quanly/don-hang/tao?ngay=@hienTai" style="background:var(--jade);color:white;">+ Tạo đơn mới</a>
+    </form>
+</div>
+
+@if (Model.Don.Count == 0)
+{
+    <div class="khung">
+        <p class="rong">Không có đơn nào trong ngày này.</p>
+    </div>
+}
+else
+{
+    <div class="khung">
+        <div class="khung-dau">
+            <h2>Tổng hợp theo tuyến</h2>
+        </div>
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Tuyến</th>
+                        <th>Lộ trình</th>
+                        <th>Khoảng cách</th>
+                        <th>Số đơn</th>
+                        <th>Đang chạy</th>
+                        <th>Hoàn thành</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model.TheoTuyen)
+                    {
+                        <tr>
+                            <td><strong>@t.TenTuyen</strong></td>
+                            <td>@t.DiemDi → @t.DiemDen</td>
+                            <td>@t.KhoangCachKm km</td>
+                            <td>@t.SoDon</td>
+                            <td>@t.SoDangChay</td>
+                            <td>@t.SoHoanThanh</td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="khung">
+        <div class="khung-dau">
+            <h2>Danh sách đơn</h2>
+        </div>
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Mã đơn</th>
+                        <th>Khách hàng</th>
+                        <th>Tuyến</th>
+                        <th>Loại hàng</th>
+                        <th>Tài xế phụ trách</th>
+                        <th>Doanh thu</th>
+                        <th>Chữ ký</th>
+                        <th>Ghi chú</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var d in Model.Don)
+                    {
+                        <tr>
+                            <td><strong>@d.MaDon</strong></td>
+                            <td>@d.TenKhachHang</td>
+                            <td>
+                                <div>@d.TenTuyen</div>
+                                <div class="nho">@d.DiemDi → @d.DiemDen · @d.KhoangCachKm km</div>
+                            </td>
+                            <td>@d.LoaiHang</td>
+                            <td>
+                                @if (d.ChuaPhanCong)
+                                {
+                                    <span class="huy-hieu khong">Chưa phân công</span>
+                                }
+                                else
+                                {
+                                    foreach (var c in d.Chuyens)
+                                    {
+                                        <div class="dong-chuyen">
+                                            <div>@c.MaTaiXe - @c.HoTenTaiXe</div>
+                                            <span class="huy-hieu @NhanHienThi.LopCss(c.TrangThai)">@NhanHienThi.TrangThai(c.TrangThai)</span>
+                                            @if (c.MaContainerDaQuet.Count > 0)
+                                            {
+                                                <div class="nho">Đã quét: @string.Join(", ", c.MaContainerDaQuet)</div>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(c.NguoiKyTen))
+                                            {
+                                                <div class="nho">Người ký nhận: @c.NguoiKyTen</div>
+                                            }
+                                            @if (c.CoAnhGiaoHang)
+                                            {
+                                                <div class="nho">
+                                                    <a href="/quanly/don-hang/anh-giao-hang/@c.PhanCongId" target="_blank">📄 Xem ảnh giao hàng</a>
+                                                </div>
+                                            }
+                                            @if (c.OdoBatDau.HasValue || c.OdoKetThuc.HasValue)
+                                            {
+                                                <div class="nho">
+                                                    ODO: @(c.OdoBatDau.HasValue ? c.OdoBatDau.Value.ToString("N0", vn) : "?") → @(c.OdoKetThuc.HasValue ? c.OdoKetThuc.Value.ToString("N0", vn) : "?")
+                                                </div>
+                                            }
+                                            @if (c.KmThucChay.HasValue)
+                                            {
+                                                var lechPhanTram = d.KhoangCachKm > 0
+                                                    ? Math.Abs(c.KmThucChay.Value - d.KhoangCachKm) / d.KhoangCachKm * 100
+                                                    : 0;
+                                                <div class="nho">
+                                                    Thực chạy @c.KmThucChay.Value.ToString("N0", vn) km (tuyến @d.KhoangCachKm km)
+                                                    @if (lechPhanTram > 30)
+                                                    {
+                                                        <span class="huy-hieu cho">Lệch @lechPhanTram.ToString("0")%</span>
+                                                    }
+                                                </div>
+                                            }
+                                            @if (!string.IsNullOrWhiteSpace(c.AnhOdoBatDauUrl) || !string.IsNullOrWhiteSpace(c.AnhOdoKetThucUrl))
+                                            {
+                                                <div class="nho">
+                                                    @if (!string.IsNullOrWhiteSpace(c.AnhOdoBatDauUrl))
+                                                    {
+                                                        <a href="@c.AnhOdoBatDauUrl" target="_blank">📷 ODO đầu</a>
+                                                    }
+                                                    @if (!string.IsNullOrWhiteSpace(c.AnhOdoKetThucUrl))
+                                                    {
+                                                        <a href="@c.AnhOdoKetThucUrl" target="_blank">📷 ODO cuối</a>
+                                                    }
+                                                </div>
+                                            }
+                                        </div>
+                                    }
+                                }
+                            </td>
+                            <td>
+                                <form method="post" action="/quanly/don-hang/doanh-thu/@d.Id" style="display:flex;gap:6px;align-items:center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="ngay" value="@hienTai" />
+                                    <input type="number" name="doanhThu" value="@d.DoanhThu" step="1000" min="0"
+                                           style="width:110px;padding:6px;border:1px solid #b0bec5;border-radius:6px;font-size:12px;" />
+                                    <button type="submit" class="nut-phu" style="padding:5px 8px;font-size:11px;">Lưu</button>
+                                </form>
+                            </td>
+                            <td>
+                                @if (d.CoChuKy)
+                                {
+                                    <a class="nut-phu" href="/quanly/don-hang/chu-ky/@d.Id" target="_blank" style="padding:4px 8px;font-size:12px;text-decoration:none;">
+                                        📝 Xem chữ ký
+                                    </a>
+                                }
+                                else
+                                {
+                                    <span style="color:#94a3b8;font-size:13px;">Chưa ký</span>
+                                }
+                            </td>
+                            <td>
+                                @(string.IsNullOrWhiteSpace(d.GhiChu) ? "-" : d.GhiChu)
+                                @if (d.ChuaPhanCong)
+                                {
+                                    <div class="nho" style="margin-top:6px">
+                                        <a class="nut-phu" href="/quanly/don-hang/gan-tai-xe/@d.Id">+ Gán tài xế</a>
+                                    </div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    </div>
+}

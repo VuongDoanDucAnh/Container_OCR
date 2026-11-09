@@ -1,0 +1,121 @@
+﻿@model BaoCaoThangViewModel
+@{
+    ViewData["Trang"] = "ketoan";
+    ViewData["TieuDe"] = "Báo cáo tháng";
+    var vn = System.Globalization.CultureInfo.GetCultureInfo("vi-VN");
+    var thangStr = Model.Thang.ToString("yyyy-MM");
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Báo cáo thu – chi & lợi nhuận</h1>
+        <p class="phu">Tổng hợp theo từng xe, theo tháng</p>
+    </div>
+</div>
+
+<div style="margin-bottom:16px">
+    <a class="nut-phu" href="/quanly/ke-toan">Bảng lương</a>
+    <a class="nut-phu" href="/quanly/ke-toan/chi-phi">Chi phí phát sinh</a>
+    <a class="nut-phu" href="/quanly/ke-toan/bao-cao-thang" style="background:var(--jade);color:white;">Báo cáo tháng</a>
+</div>
+
+<div class="khung">
+    <form method="get" action="/quanly/ke-toan/bao-cao-thang" class="bo-loc-ngay" style="margin-bottom:14px;">
+        <span class="nho">Tháng</span>
+        <input type="month" name="thang" value="@thangStr" />
+        <button type="submit" class="nut-phu">Xem</button>
+        <a class="nut-phu" href="/quanly/ke-toan/bao-cao-thang/xuat-excel?thang=@thangStr" style="background:var(--jade);color:white;">⬇ Tải Excel</a>
+    </form>
+
+    @if (Model.DanhSachXe.Count == 0)
+    {
+        <p class="rong">Chưa có xe nào được gán biển số. Vào trang Tài xế để thêm biển số trước.</p>
+    }
+    else
+    {
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Khoản mục</th>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <th>@xe.BienSo<div class="nho">(@xe.HoTen)</div></th>
+                        }
+                        <th>Tổng @Model.DanhSachXe.Count xe</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>Lợi nhuận tháng @Model.Thang.ToString("M/yyyy")</strong></td>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <td><strong>@xe.LoiNhuan.ToString("N0", vn) đ</strong></td>
+                        }
+                        <td><strong>@Model.TongLoiNhuan.ToString("N0", vn) đ</strong></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="khung-dau" style="margin-top:18px">
+            <h2>Phân tích tỷ lệ</h2>
+        </div>
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Chỉ số</th>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <th>@xe.BienSo</th>
+                        }
+                        <th>Bình quân</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>Số chuyến</td>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <td>@xe.SoChuyen</td>
+                        }
+                        <td>@Model.BinhQuanSoChuyen.ToString("N0", vn)</td>
+                    </tr>
+                    <tr>
+                        <td>Lợi nhuận bình quân/chuyến</td>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <td>@xe.LoiNhuanBinhQuanChuyen.ToString("N0", vn) đ</td>
+                        }
+                        <td>@Model.BinhQuanLoiNhuanChuyen.ToString("N0", vn) đ</td>
+                    </tr>
+                    <tr>
+                        <td>Lương TX / Doanh thu</td>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <td>@xe.TyLeLuongTrenDoanhThu.ToString("N1", vn)%</td>
+                        }
+                        <td>@Model.BinhQuanTyLeLuong.ToString("N1", vn)%</td>
+                    </tr>
+                    <tr>
+                        <td>Tiền dầu / Doanh thu</td>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <td>@xe.TyLeDauTrenDoanhThu.ToString("N1", vn)%</td>
+                        }
+                        <td>@Model.BinhQuanTyLeDau.ToString("N1", vn)%</td>
+                    </tr>
+                    <tr>
+                        <td>Lợi nhuận / Doanh thu</td>
+                        @foreach (var xe in Model.DanhSachXe)
+                        {
+                            <td>@xe.TyLeLoiNhuanTrenDoanhThu.ToString("N1", vn)%</td>
+                        }
+                        <td>@Model.BinhQuanTyLeLoiNhuan.ToString("N1", vn)%</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

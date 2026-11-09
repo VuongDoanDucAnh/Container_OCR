@@ -7,11 +7,14 @@ namespace App_OCR
         public App()
         {
             InitializeComponent();
+            DongBoNen.Bat();
         }
 
         protected override Window CreateWindow(IActivationState? activationState)
         {
-            return new Window(new AppShell());
+            var cuaSo = new Window(new AppShell());
+            cuaSo.Activated += (_, _) => DongBoNen.ThuDongBoNgay();
+            return cuaSo;
         }
     }
 }
