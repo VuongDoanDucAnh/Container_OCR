@@ -1,0 +1,344 @@
+﻿@{
+    ViewData["Trang"] = "don";
+    ViewData["TieuDe"] = "Nhập đơn từ Excel";
+}
+
+<style>
+    .nut-thoat:disabled { opacity: 0.55; cursor: not-allowed; }
+</style>
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Nhập đơn hàng từ Excel</h1>
+        <p class="phu">Tải file .xlsx lên, xem trước kết quả rồi mới xác nhận tạo đơn.</p>
+    </div>
+    <a class="nut-phu" href="/quanly/don-hang">‹ Quay lại danh sách</a>
+</div>
+
+<div class="khung" style="max-width:760px">
+    @Html.AntiForgeryToken()
+    <label class="nho" for="file-excel">File Excel (.xlsx, tối đa 5 MB)</label>
+    <input type="file" id="file-excel" accept=".xlsx"
+           style="display:block;width:100%;padding:9px;margin:6px 0 14px;border:1px solid #b0bec5;border-radius:8px;background:#fff;" />
+    <button type="button" id="nut-xem-truoc" class="nut-thoat"
+            style="background:var(--jade);border-color:var(--jade);width:100%;padding:11px;">
+        Xem trước
+    </button>
+    <p id="thong-bao" class="nho" style="margin:12px 0 0"></p>
+</div>
+
+<div id="ket-qua" hidden>
+    <div class="luoi-the" id="the-tom-tat"></div>
+
+    <div class="khung" id="khung-tuyen-moi" hidden>
+        <div class="khung-dau">
+            <h2>Tuyến chưa có trong hệ thống</h2>
+        </div>
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Tên tuyến</th>
+                        <th>Điểm đi</th>
+                        <th>Điểm đến</th>
+                        <th>Số km</th>
+                        <th>Số đơn</th>
+                    </tr>
+                </thead>
+                <tbody id="bang-tuyen-moi"></tbody>
+            </table>
+        </div>
+        <label style="display:flex;align-items:center;gap:8px;margin-top:14px;font-size:14px;">
+            <input type="checkbox" id="tao-tuyen-moi" checked />
+            Tự động tạo các tuyến này và nhập luôn các đơn thuộc tuyến đó
+        </label>
+    </div>
+
+    <div class="khung" id="khung-loi" hidden>
+        <div class="khung-dau">
+            <h2>Dòng bị lỗi (sẽ không được tạo)</h2>
+        </div>
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Dòng Excel</th>
+                        <th>Mã đơn</th>
+                        <th>Lý do</th>
+                    </tr>
+                </thead>
+                <tbody id="bang-loi"></tbody>
+            </table>
+        </div>
+    </div>
+
+    <div class="khung" id="khung-da-co" hidden>
+        <details>
+            <summary id="tieu-de-da-co" style="cursor:pointer;"></summary>
+            <p id="ds-da-co" class="nho"></p>
+        </details>
+    </div>
+
+    <div class="khung">
+        <button type="button" id="nut-xac-nhan" class="nut-thoat"
+                style="background:var(--jade);border-color:var(--jade);width:100%;padding:11px;">
+            Xác nhận tạo đơn hàng
+        </button>
+    </div>
+</div>
+
+<div id="ket-qua-cuoi" class="khung" style="max-width:760px" hidden></div>
+
+<script>
+    (function () {
+        const URL_XEM_TRUOC = '/quanly/don-hang/nhap-excel/xem-truoc';
+        const URL_XAC_NHAN = '/quanly/don-hang/nhap-excel/xac-nhan';
+        const KICH_THUOC_TOI_DA = 5 * 1024 * 1024;
+
+        const oFile = document.getElementById('file-excel');
+        const nutXemTruoc = document.getElementById('nut-xem-truoc');
+        const nutXacNhan = document.getElementById('nut-xac-nhan');
+        const thongBao = document.getElementById('thong-bao');
+        const ketQua = document.getElementById('ket-qua');
+        const ketQuaCuoi = document.getElementById('ket-qua-cuoi');
+        const oTaoTuyenMoi = document.getElementById('tao-tuyen-moi');
+        const khungTuyenMoi = document.getElementById('khung-tuyen-moi');
+        const khungLoi = document.getElementById('khung-loi');
+        const khungDaCo = document.getElementById('khung-da-co');
+        const token = document.querySelector('input[name="__RequestVerificationToken"]');
+
+        let tomTat = null;
+
+        function xoa(phanTu) {
+            while (phanTu.firstChild) {
+                phanTu.removeChild(phanTu.firstChild);
+            }
+        }
+
+        function them(cha, the, chu, lop) {
+            const phanTu = document.createElement(the);
+            if (chu !== undefined && chu !== null) {
+                phanTu.textContent = String(chu);
+            }
+            if (lop) {
+                phanTu.className = lop;
+            }
+            cha.appendChild(phanTu);
+            return phanTu;
+        }
+
+        function baoLoi(chu) {
+            thongBao.style.color = '#c62828';
+            thongBao.textContent = chu;
+        }
+
+        function baoThuong(chu) {
+            thongBao.style.color = '';
+            thongBao.textContent = chu;
+        }
+
+        async function gui(url, taoTuyenMoi) {
+            const form = new FormData();
+            form.append('File', oFile.files[0]);
+            form.append('TaoTuyenMoi', taoTuyenMoi ? 'true' : 'false');
+            form.append('__RequestVerificationToken', token ? token.value : '');
+
+            let phanHoi;
+            try {
+                phanHoi = await fetch(url, {
+                    method: 'POST',
+                    body: form,
+                    credentials: 'same-origin',
+                    headers: { 'Accept': 'application/json' }
+                });
+            } catch (loi) {
+                return { loi: 'Không kết nối được tới máy chủ. Kiểm tra API đang chạy rồi thử lại.' };
+            }
+
+            const kieu = phanHoi.headers.get('content-type') || '';
+            if (!kieu.includes('application/json')) {
+                if (phanHoi.redirected) {
+                    return { loi: 'Phiên đăng nhập đã hết hạn. Hãy tải lại trang và đăng nhập lại.' };
+                }
+                if (phanHoi.status === 400) {
+                    return { loi: 'Mã bảo mật của trang đã hết hạn. Nhấn F5 để tải lại trang rồi thử lại.' };
+                }
+                if (phanHoi.status >= 500) {
+                    return { loi: 'Máy chủ gặp lỗi (mã ' + phanHoi.status + '). Xem cửa sổ Output của Visual Studio để biết chi tiết.' };
+                }
+                return { loi: 'Phản hồi không hợp lệ từ máy chủ (mã ' + phanHoi.status + ').' };
+            }
+
+            const duLieu = await phanHoi.json();
+            if (!phanHoi.ok) {
+                return { loi: duLieu.loi || 'Có lỗi xảy ra.' };
+            }
+            return { duLieu: duLieu };
+        }
+
+        function soDonSeTao() {
+            if (!tomTat) {
+                return 0;
+            }
+            return tomTat.soDonSanSangTao + (oTaoTuyenMoi.checked ? tomTat.soDonCanTaoTuyenMoi : 0);
+        }
+
+        function capNhatNutXacNhan() {
+            const n = soDonSeTao();
+            nutXacNhan.textContent = n > 0 ? 'Xác nhận tạo ' + n + ' đơn hàng' : 'Không có đơn nào để tạo';
+            nutXacNhan.disabled = n === 0;
+        }
+
+        function veKetQuaXemTruoc(d) {
+            const theTomTat = document.getElementById('the-tom-tat');
+            xoa(theTomTat);
+            const cacThe = [
+                ['Tổng số dòng', d.tongSoDong, ''],
+                ['Sẵn sàng tạo', d.soDonSanSangTao, ''],
+                ['Cần tạo tuyến mới', d.soDonCanTaoTuyenMoi, ''],
+                ['Đã có (bỏ qua)', d.soDongDaCoTrongHeThong, ''],
+                ['Dòng lỗi', d.soDongLoi, d.soDongLoi > 0 ? 'canh-bao' : '']
+            ];
+            cacThe.forEach(function (muc) {
+                const the = them(theTomTat, 'div', null, ('the-so ' + muc[2]).trim());
+                them(the, 'div', muc[0], 'nhan');
+                them(the, 'div', muc[1], 'so');
+            });
+
+            const bangTuyenMoi = document.getElementById('bang-tuyen-moi');
+            xoa(bangTuyenMoi);
+            d.tuyenMoi.forEach(function (t) {
+                const hang = them(bangTuyenMoi, 'tr');
+                them(hang, 'td', t.tenTuyen);
+                them(hang, 'td', t.diemDi);
+                them(hang, 'td', t.diemDen);
+                them(hang, 'td', Number(t.khoangCachKm).toLocaleString('vi-VN'));
+                them(hang, 'td', t.soDon);
+            });
+            khungTuyenMoi.hidden = d.tuyenMoi.length === 0;
+            oTaoTuyenMoi.checked = true;
+
+            const bangLoi = document.getElementById('bang-loi');
+            xoa(bangLoi);
+            d.dongLoi.forEach(function (dong) {
+                const hang = them(bangLoi, 'tr');
+                them(hang, 'td', dong.soDong);
+                them(hang, 'td', dong.maDon);
+                them(hang, 'td', dong.loi.join(' '));
+            });
+            khungLoi.hidden = d.dongLoi.length === 0;
+
+            khungDaCo.hidden = d.dongDaCo.length === 0;
+            document.getElementById('tieu-de-da-co').textContent =
+                d.dongDaCo.length + ' dòng bị bỏ qua vì mã đơn đã có trong hệ thống';
+            document.getElementById('ds-da-co').textContent = d.dongDaCo
+                .map(function (dong) { return 'Dòng ' + dong.soDong + ': ' + dong.maDon; })
+                .join(' · ');
+
+            capNhatNutXacNhan();
+        }
+
+        function veKetQuaCuoi(d) {
+            xoa(ketQuaCuoi);
+            const dau = them(ketQuaCuoi, 'div', null, 'khung-dau');
+            them(dau, 'h2', 'Đã nhập xong');
+            them(ketQuaCuoi, 'p', 'Đã tạo ' + d.soDonDaTao + ' đơn hàng và ' + d.soTuyenMoiDaTao + ' tuyến mới.');
+
+            const ghiChu = [];
+            if (d.soDongDaCoTrongHeThong > 0) {
+                ghiChu.push(d.soDongDaCoTrongHeThong + ' dòng bị bỏ qua vì mã đơn đã có');
+            }
+            if (d.soDongLoi > 0) {
+                ghiChu.push(d.soDongLoi + ' dòng lỗi không được tạo');
+            }
+            if (d.soDongBoQuaDoChuaCoTuyen > 0) {
+                ghiChu.push(d.soDongBoQuaDoChuaCoTuyen + ' dòng bị bỏ qua vì tuyến chưa có');
+            }
+            if (ghiChu.length > 0) {
+                them(ketQuaCuoi, 'p', ghiChu.join('; ') + '.', 'nho');
+            }
+            them(ketQuaCuoi, 'p', 'Các đơn được xếp theo ngày chạy ghi trong file, hãy chọn đúng ngày ở trang danh sách để xem.', 'nho');
+
+            const lienKet = them(ketQuaCuoi, 'a', 'Xem danh sách đơn', 'nut-phu');
+            lienKet.href = '/quanly/don-hang';
+
+            if (d.danhSachMaDon && d.danhSachMaDon.length > 0) {
+                const chiTiet = them(ketQuaCuoi, 'details');
+                chiTiet.style.marginTop = '14px';
+                them(chiTiet, 'summary', 'Danh sách mã đơn đã tạo (lưu lại nếu cần hoàn tác)', 'nho');
+                them(chiTiet, 'p', d.danhSachMaDon.join(', '), 'nho');
+            }
+            ketQuaCuoi.hidden = false;
+        }
+
+        oFile.addEventListener('change', function () {
+            tomTat = null;
+            ketQua.hidden = true;
+            ketQuaCuoi.hidden = true;
+            baoThuong('');
+        });
+
+        oTaoTuyenMoi.addEventListener('change', capNhatNutXacNhan);
+
+        nutXemTruoc.addEventListener('click', async function () {
+            ketQua.hidden = true;
+            ketQuaCuoi.hidden = true;
+
+            const file = oFile.files[0];
+            if (!file) {
+                baoLoi('Hãy chọn một file Excel (.xlsx).');
+                return;
+            }
+            if (!file.name.toLowerCase().endsWith('.xlsx')) {
+                baoLoi('Chỉ hỗ trợ file .xlsx.');
+                return;
+            }
+            if (file.size > KICH_THUOC_TOI_DA) {
+                baoLoi('File quá lớn (tối đa 5 MB).');
+                return;
+            }
+
+            nutXemTruoc.disabled = true;
+            baoThuong('Đang đọc file...');
+            const kq = await gui(URL_XEM_TRUOC, false);
+            nutXemTruoc.disabled = false;
+
+            if (kq.loi) {
+                baoLoi(kq.loi);
+                return;
+            }
+
+            baoThuong('');
+            tomTat = kq.duLieu;
+            veKetQuaXemTruoc(tomTat);
+            ketQua.hidden = false;
+        });
+
+        nutXacNhan.addEventListener('click', async function () {
+            const n = soDonSeTao();
+            if (n === 0) {
+                return;
+            }
+            if (!window.confirm('Tạo ' + n + ' đơn hàng vào hệ thống?')) {
+                return;
+            }
+
+            nutXacNhan.disabled = true;
+            nutXemTruoc.disabled = true;
+            baoThuong('Đang tạo đơn...');
+            const kq = await gui(URL_XAC_NHAN, oTaoTuyenMoi.checked);
+            nutXemTruoc.disabled = false;
+
+            if (kq.loi) {
+                capNhatNutXacNhan();
+                baoLoi(kq.loi);
+                return;
+            }
+
+            baoThuong('');
+            tomTat = null;
+            ketQua.hidden = true;
+            veKetQuaCuoi(kq.duLieu);
+        });
+    })();
+</script>
