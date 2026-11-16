@@ -78,9 +78,24 @@ public class QuanLyChiPhiController : Controller
         var cp = await _db.ChiPhiPhatSinhs.FirstOrDefaultAsync(c => c.Id == id);
         if (cp is not null && cp.TrangThai == TrangThaiChiPhi.ChoGiaiChi)
         {
+            int soCanhBaoMo = await DemCanhBaoMoAsync(cp.DriverId);
+            if (soCanhBaoMo > 0)
+            {
+                TempData["Loi"] = $"Chưa thể giải chi: tài xế này còn {soCanhBaoMo} cảnh báo ODO chưa xử lý. Hãy xử lý cảnh báo trước.";
+                return RedirectToAction("Index", "QuanLyCanhBao", new { driverId = cp.DriverId });
+            }
+
             cp.TrangThai = TrangThaiChiPhi.DaGiaiChi;
             cp.ThoiGianGiaiChi = DateTime.UtcNow;
-            await _db.SaveChangesAsync();
+
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                TempData["Loi"] = "Khoản chi này vừa được người khác cập nhật. Vui lòng kiểm tra lại danh sách.";
+            }
         }
 
         return RedirectToAction(nameof(ChiPhi), new { tuNgay, denNgay });
@@ -90,6 +105,13 @@ public class QuanLyChiPhiController : Controller
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> GiaiChiTuan(int driverId, string? tuNgay, string? denNgay)
     {
+        int soCanhBaoMo = await DemCanhBaoMoAsync(driverId);
+        if (soCanhBaoMo > 0)
+        {
+            TempData["Loi"] = $"Chưa thể giải chi: tài xế này còn {soCanhBaoMo} cảnh báo ODO chưa xử lý. Hãy xử lý cảnh báo trước.";
+            return RedirectToAction("Index", "QuanLyCanhBao", new { driverId });
+        }
+
         var (tu, den) = XacDinhKhoangNgay(tuNgay, denNgay);
         var tuUtc = tu.ToUniversalTime();
         var denUtc = den.AddDays(1).ToUniversalTime();
@@ -108,11 +130,21 @@ public class QuanLyChiPhiController : Controller
 
         if (dsCanGiai.Count > 0)
         {
-            await _db.SaveChangesAsync();
+            try
+            {
+                await _db.SaveChangesAsync();
+            }
+            catch (DbUpdateConcurrencyException)
+            {
+                TempData["Loi"] = "Có khoản chi vừa được người khác cập nhật. Vui lòng kiểm tra lại danh sách.";
+            }
         }
 
         return RedirectToAction(nameof(ChiPhi), new { tuNgay, denNgay });
     }
+
+    private Task<int> DemCanhBaoMoAsync(int driverId) =>
+        _db.CanhBaoChuyens.CountAsync(c => c.DriverId == driverId && c.TrangThai == TrangThaiCanhBao.Mo);
 
     private static (DateTime Tu, DateTime Den) XacDinhKhoangNgay(string? tuNgay, string? denNgay)
     {

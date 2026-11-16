@@ -3,7 +3,15 @@ using System.Text.Json;
 
 namespace DoAnOlympics.Api.Services;
 
-public record GeminiOcrResult(bool DocDuoc, string? MaContainer, string? GhiChu);
+public enum GeminiLoiLoai
+{
+    Khong,
+    TamThoi,
+    CauHinh,
+    KhongCoNoiDung
+}
+
+public record GeminiOcrResult(bool DocDuoc, string? MaContainer, string? GhiChu, GeminiLoiLoai Loai = GeminiLoiLoai.Khong);
 
 public interface IGeminiOcrClient
 {
@@ -13,7 +21,7 @@ public class GeminiOcrClient : IGeminiOcrClient
 {
     private readonly HttpClient _httpClient;
     private readonly IConfiguration _config;
-    private const string Model = "gemini-3.6-flash";
+    private const string ModelMacDinh = "gemini-3.6-flash";
 
     public GeminiOcrClient(HttpClient httpClient, IConfiguration config)
     {
@@ -23,8 +31,12 @@ public class GeminiOcrClient : IGeminiOcrClient
 
     public async Task<GeminiOcrResult> DocMaContainerAsync(byte[] anhBytes, string mimeType)
     {
-        string apiKey = _config["Gemini:ApiKey"]
-            ?? throw new InvalidOperationException("Chưa cấu hình Gemini:ApiKey trong user-secrets");
+        string? apiKey = _config["Gemini:ApiKey"];
+        if (string.IsNullOrWhiteSpace(apiKey))
+        {
+            return new GeminiOcrResult(false, null, "Chưa cấu hình Gemini:ApiKey trong user-secrets", GeminiLoiLoai.CauHinh);
+        }
+        string model = _config["Gemini:VisionModel"] ?? ModelMacDinh;
 
         string base64Anh = Convert.ToBase64String(anhBytes);
 
@@ -69,7 +81,7 @@ public class GeminiOcrClient : IGeminiOcrClient
 
         var request = new HttpRequestMessage(
             HttpMethod.Post,
-            $"https://generativelanguage.googleapis.com/v1beta/models/{Model}:generateContent");
+            $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent");
 
         request.Headers.Add("x-goog-api-key", apiKey);
         request.Content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
@@ -79,28 +91,31 @@ public class GeminiOcrClient : IGeminiOcrClient
 
         if (!response.IsSuccessStatusCode)
         {
-            return new GeminiOcrResult(false, null, $"Lỗi Gemini API ({(int)response.StatusCode}): {responseJson}");
+            int maTrangThai = (int)response.StatusCode;
+            var loai = maTrangThai == 408 || maTrangThai == 429 || maTrangThai >= 500
+                ? GeminiLoiLoai.TamThoi
+                : GeminiLoiLoai.CauHinh;
+            return new GeminiOcrResult(false, null, $"Lỗi Gemini API ({maTrangThai}): {responseJson}", loai);
         }
 
         using var doc = JsonDocument.Parse(responseJson);
 
-        var candidates = doc.RootElement.GetProperty("candidates");
-        if (candidates.GetArrayLength() == 0)
+        if (!doc.RootElement.TryGetProperty("candidates", out var candidates) || candidates.GetArrayLength() == 0)
         {
-            return new GeminiOcrResult(false, null, "Gemini không trả về candidate nào (có thể bị chặn bởi safety filter)");
+            return new GeminiOcrResult(false, null, "Gemini không trả về candidate nào (có thể bị chặn bởi safety filter)", GeminiLoiLoai.KhongCoNoiDung);
         }
 
         var content = candidates[0].GetProperty("content");
         if (!content.TryGetProperty("parts", out var parts) || parts.GetArrayLength() == 0)
         {
             string finishReason = candidates[0].TryGetProperty("finishReason", out var fr) ? fr.GetString() ?? "" : "";
-            return new GeminiOcrResult(false, null, $"Không có nội dung trả về, finishReason={finishReason} (thường do hết token cho phần 'thinking')");
+            return new GeminiOcrResult(false, null, $"Không có nội dung trả về, finishReason={finishReason} (thường do hết token cho phần 'thinking')", GeminiLoiLoai.KhongCoNoiDung);
         }
 
         string? textOutput = parts[0].GetProperty("text").GetString();
         if (string.IsNullOrWhiteSpace(textOutput))
         {
-            return new GeminiOcrResult(false, null, "Nội dung trả về rỗng");
+            return new GeminiOcrResult(false, null, "Nội dung trả về rỗng", GeminiLoiLoai.KhongCoNoiDung);
         }
 
         using var parsed = JsonDocument.Parse(textOutput);

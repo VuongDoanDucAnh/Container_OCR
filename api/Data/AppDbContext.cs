@@ -16,6 +16,8 @@ public class AppDbContext : DbContext
     public DbSet<TinNhan> TinNhans => Set<TinNhan>();
     public DbSet<LoaiHinhChuyen> LoaiHinhChuyens => Set<LoaiHinhChuyen>();
     public DbSet<ChiPhiPhatSinh> ChiPhiPhatSinhs => Set<ChiPhiPhatSinh>();
+    public DbSet<CanhBaoChuyen> CanhBaoChuyens => Set<CanhBaoChuyen>();
+    public DbSet<NhatKyQuet> NhatKyQuets => Set<NhatKyQuet>();
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -145,5 +147,41 @@ public class AppDbContext : DbContext
         modelBuilder.Entity<Driver>()
             .Property(d => d.BienSoXe)
             .HasMaxLength(20);
+
+        modelBuilder.Entity<ChiPhiPhatSinh>()
+            .Property(c => c.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<CanhBaoChuyen>()
+            .HasOne(c => c.PhanCongChuyen)
+            .WithMany()
+            .HasForeignKey(c => c.PhanCongChuyenId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CanhBaoChuyen>()
+            .HasOne(c => c.Driver)
+            .WithMany()
+            .HasForeignKey(c => c.DriverId)
+            .OnDelete(DeleteBehavior.Restrict);
+
+        modelBuilder.Entity<CanhBaoChuyen>()
+            .Property(c => c.Loai)
+            .HasConversion<string>()
+            .HasMaxLength(30);
+
+        modelBuilder.Entity<CanhBaoChuyen>()
+            .Property(c => c.TrangThai)
+            .HasConversion<string>()
+            .HasMaxLength(20);
+
+        modelBuilder.Entity<CanhBaoChuyen>()
+            .Property(c => c.RowVersion)
+            .IsRowVersion();
+
+        modelBuilder.Entity<CanhBaoChuyen>()
+            .HasIndex(c => new { c.DriverId, c.TrangThai });
+
+        modelBuilder.Entity<NhatKyQuet>()
+            .HasIndex(n => n.ThoiGian);
     }
 }

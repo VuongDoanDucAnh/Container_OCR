@@ -73,9 +73,15 @@ public class BaoCaoAiService : IBaoCaoAiService
             }
         };
 
-        string url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent?key={apiKey}";
+        string url = $"https://generativelanguage.googleapis.com/v1beta/models/{model}:generateContent";
 
-        using var phanHoi = await _httpClient.PostAsJsonAsync(url, body);
+        using var yeuCau = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = JsonContent.Create(body)
+        };
+        yeuCau.Headers.Add("x-goog-api-key", apiKey);
+
+        using var phanHoi = await _httpClient.SendAsync(yeuCau);
         phanHoi.EnsureSuccessStatusCode();
 
         using var noiDung = await phanHoi.Content.ReadAsStreamAsync();

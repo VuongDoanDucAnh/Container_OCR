@@ -21,12 +21,16 @@ public class TrangChuController : ControllerBase
     private readonly AppDbContext _db;
     private readonly IGeminiOdoClient _odoClient;
     private readonly IAnhLuuTruService _anhLuuTru;
+    private readonly ILogger<TrangChuController> _logger;
+    private readonly IConfiguration _config;
 
-    public TrangChuController(AppDbContext db, IGeminiOdoClient odoClient, IAnhLuuTruService anhLuuTru)
+    public TrangChuController(AppDbContext db, IGeminiOdoClient odoClient, IAnhLuuTruService anhLuuTru, ILogger<TrangChuController> logger, IConfiguration config)
     {
         _db = db;
         _odoClient = odoClient;
         _anhLuuTru = anhLuuTru;
+        _logger = logger;
+        _config = config;
     }
 
     [HttpGet]
@@ -132,8 +136,9 @@ public class TrangChuController : ControllerBase
         {
             ketQuaAi = await _odoClient.DocOdoAsync(anhBytes, anh.ContentType);
         }
-        catch (Exception)
+        catch (Exception ex)
         {
+            _logger.LogError(ex, "Đọc ODO bằng Gemini thất bại. DriverId={DriverId} KichThuocAnh={KichThuocAnh}", LayDriverId(), anhBytes.Length);
             var anhIdKhiLoi = await _anhLuuTru.TaiLenAsync(anhBytes, ThuMucAnhOdo);
             return StatusCode(503, new DocOdoResponseDto
             {
@@ -224,15 +229,32 @@ public class TrangChuController : ControllerBase
                 "ANH_ODO_KHONG_HOP_LE"));
         }
 
+        int? odoCuoiChuyenTruoc = await _db.PhanCongChuyens
+            .Where(p => p.DriverId == driverId
+                && p.Id != chuyen.Id
+                && p.TrangThai == TrangThaiChuyen.HoanThanh
+                && p.OdoKetThuc != null)
+            .OrderByDescending(p => p.ThoiGianKetThuc)
+            .Select(p => p.OdoKetThuc)
+            .FirstOrDefaultAsync();
+
+        double dungSaiKm = _config.GetValue("KiemSoat:DungSaiOdoDauKm", KiemSoatChuyen.DungSaiOdoDauMacDinh);
+        var canhBao = KiemSoatChuyen.KiemTraOdoDau(chuyen.Id, driverId, odoBatDau, odoCuoiChuyenTruoc, dungSaiKm);
+
         chuyen.TrangThai = TrangThaiChuyen.DangChay;
         chuyen.ThoiGianBatDau = DateTime.UtcNow;
         chuyen.OdoBatDau = odoBatDau;
         chuyen.AnhOdoBatDauPublicId = string.IsNullOrWhiteSpace(dto.AnhOdoPublicId)
             ? null
             : dto.AnhOdoPublicId.Trim();
+        if (canhBao is not null)
+        {
+            _db.CanhBaoChuyens.Add(canhBao);
+        }
+
         await _db.SaveChangesAsync();
 
-        return Ok(new { thanhCong = true, trangThai = chuyen.TrangThai.ToString() });
+        return Ok(new { thanhCong = true, trangThai = chuyen.TrangThai.ToString(), canhBao = canhBao?.MoTa });
     }
 
     [HttpPost("chuyen/{id:int}/hoan-thanh")]
@@ -302,6 +324,18 @@ public class TrangChuController : ControllerBase
                 "ANH_GIAO_HANG_KHONG_HOP_LE"));
         }
 
+        double kmMotChieu = await _db.DonHangs
+            .Where(d => d.Id == chuyen.DonHangId)
+            .Select(d => d.TuyenDuong!.KhoangCachKm)
+            .FirstOrDefaultAsync();
+
+        CanhBaoChuyen? canhBao = null;
+        if (chuyen.OdoBatDau.HasValue)
+        {
+            double nguongPhanTram = _config.GetValue("KiemSoat:NguongLechQuangDuongPhanTram", KiemSoatChuyen.NguongLechQuangDuongMacDinh);
+            canhBao = KiemSoatChuyen.KiemTraQuangDuong(chuyen.Id, driverId, chuyen.OdoBatDau.Value, odoKetThuc, kmMotChieu, nguongPhanTram);
+        }
+
         chuyen.TrangThai = TrangThaiChuyen.HoanThanh;
         chuyen.ThoiGianKetThuc = DateTime.UtcNow;
         chuyen.OdoKetThuc = odoKetThuc;
@@ -323,9 +357,14 @@ public class TrangChuController : ControllerBase
                 : dto.AnhGiaoHangLoaiNoiDung.Trim();
         }
 
+        if (canhBao is not null)
+        {
+            _db.CanhBaoChuyens.Add(canhBao);
+        }
+
         await _db.SaveChangesAsync();
 
-        return Ok(new { thanhCong = true, trangThai = chuyen.TrangThai.ToString() });
+        return Ok(new { thanhCong = true, trangThai = chuyen.TrangThai.ToString(), canhBao = canhBao?.MoTa });
     }
 
     private static bool OdoHopLe(int odo) => odo is >= 0 and <= OdoToiDa;

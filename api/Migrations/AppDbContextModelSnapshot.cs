@@ -22,6 +22,69 @@ namespace DoAnOlympics.Api.Migrations
 
             SqlServerModelBuilderExtensions.UseIdentityColumns(modelBuilder);
 
+            modelBuilder.Entity("DoAnOlympics.Api.Models.CanhBaoChuyen", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DriverId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("GhiChuQuanLy")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<string>("GhiChuTaiXe")
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<double>("GiaTriDo")
+                        .HasColumnType("float");
+
+                    b.Property<double>("GiaTriMongDoi")
+                        .HasColumnType("float");
+
+                    b.Property<string>("Loai")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<string>("MoTa")
+                        .IsRequired()
+                        .HasMaxLength(500)
+                        .HasColumnType("nvarchar(500)");
+
+                    b.Property<int>("PhanCongChuyenId")
+                        .HasColumnType("int");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
+
+                    b.Property<DateTime>("ThoiGianTao")
+                        .HasColumnType("datetime2");
+
+                    b.Property<DateTime?>("ThoiGianXuLy")
+                        .HasColumnType("datetime2");
+
+                    b.Property<string>("TrangThai")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("PhanCongChuyenId");
+
+                    b.HasIndex("DriverId", "TrangThai");
+
+                    b.ToTable("CanhBaoChuyens");
+                });
+
             modelBuilder.Entity("DoAnOlympics.Api.Models.ChiPhiPhatSinh", b =>
                 {
                     b.Property<int>("Id")
@@ -38,6 +101,11 @@ namespace DoAnOlympics.Api.Migrations
 
                     b.Property<decimal>("GiaDau")
                         .HasColumnType("decimal(18,0)");
+
+                    b.Property<byte[]>("RowVersion")
+                        .IsConcurrencyToken()
+                        .ValueGeneratedOnAddOrUpdate()
+                        .HasColumnType("rowversion");
 
                     b.Property<decimal>("SoLit")
                         .HasColumnType("decimal(10,2)");
@@ -254,6 +322,45 @@ namespace DoAnOlympics.Api.Migrations
                     b.ToTable("LoaiHinhChuyens");
                 });
 
+            modelBuilder.Entity("DoAnOlympics.Api.Models.NhatKyQuet", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("int");
+
+                    SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("Id"));
+
+                    b.Property<int>("DoTreMs")
+                        .HasColumnType("int");
+
+                    b.Property<int>("DriverId")
+                        .HasColumnType("int");
+
+                    b.Property<string>("KetQua")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("nvarchar(30)");
+
+                    b.Property<int>("KichThuocAnhByte")
+                        .HasColumnType("int");
+
+                    b.Property<string>("MaContainerDoc")
+                        .HasMaxLength(20)
+                        .HasColumnType("nvarchar(20)");
+
+                    b.Property<Guid?>("MaYeuCau")
+                        .HasColumnType("uniqueidentifier");
+
+                    b.Property<DateTime>("ThoiGian")
+                        .HasColumnType("datetime2");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("ThoiGian");
+
+                    b.ToTable("NhatKyQuets");
+                });
+
             modelBuilder.Entity("DoAnOlympics.Api.Models.PhanCongChuyen", b =>
                 {
                     b.Property<int>("Id")
@@ -416,6 +523,25 @@ namespace DoAnOlympics.Api.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("TuyenDuongs");
+                });
+
+            modelBuilder.Entity("DoAnOlympics.Api.Models.CanhBaoChuyen", b =>
+                {
+                    b.HasOne("DoAnOlympics.Api.Models.Driver", "Driver")
+                        .WithMany()
+                        .HasForeignKey("DriverId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.HasOne("DoAnOlympics.Api.Models.PhanCongChuyen", "PhanCongChuyen")
+                        .WithMany()
+                        .HasForeignKey("PhanCongChuyenId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Driver");
+
+                    b.Navigation("PhanCongChuyen");
                 });
 
             modelBuilder.Entity("DoAnOlympics.Api.Models.ChiPhiPhatSinh", b =>

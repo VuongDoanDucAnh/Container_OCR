@@ -18,4 +18,5 @@ public class ChiPhiPhatSinh
     public DateTime ThoiGianGui { get; set; } = DateTime.UtcNow;
     public TrangThaiChiPhi TrangThai { get; set; } = TrangThaiChiPhi.ChoGiaiChi;
     public DateTime? ThoiGianGiaiChi { get; set; }
+    public byte[]? RowVersion { get; set; }
 }

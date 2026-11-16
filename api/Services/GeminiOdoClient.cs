@@ -39,7 +39,7 @@ public class GeminiOdoClient : IGeminiOdoClient
     {
         _http = http;
         _apiKey = config["Gemini:ApiKey"] ?? string.Empty;
-        _model = config["Gemini:VisionModel"] ?? config["Gemini:Model"] ?? "gemini-2.5-flash";
+        _model = config["Gemini:VisionModel"] ?? config["Gemini:Model"] ?? "gemini-3.6-flash";
     }
 
     public async Task<DocOdoKetQuaAi> DocOdoAsync(byte[] anhBytes, string contentType)
@@ -80,19 +80,30 @@ public class GeminiOdoClient : IGeminiOdoClient
         };
 
         var jsonOptions = new JsonSerializerOptions { PropertyNamingPolicy = JsonNamingPolicy.CamelCase };
-        var jsonContent = new StringContent(JsonSerializer.Serialize(requestBody, jsonOptions), Encoding.UTF8, "application/json");
+        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent";
 
-        var url = $"https://generativelanguage.googleapis.com/v1beta/models/{_model}:generateContent?key={_apiKey}";
-        var response = await _http.PostAsync(url, jsonContent);
+        using var request = new HttpRequestMessage(HttpMethod.Post, url)
+        {
+            Content = new StringContent(JsonSerializer.Serialize(requestBody, jsonOptions), Encoding.UTF8, "application/json")
+        };
+        request.Headers.Add("x-goog-api-key", _apiKey);
+
+        var response = await _http.SendAsync(request);
 
         if (!response.IsSuccessStatusCode)
         {
-            throw new HttpRequestException($"Lỗi gọi Gemini Vision: {response.StatusCode}");
+            var noiDungLoi = await response.Content.ReadAsStringAsync();
+            throw new HttpRequestException(
+                $"Lỗi gọi Gemini Vision: {(int)response.StatusCode} {CatNgan(noiDungLoi)}",
+                null,
+                response.StatusCode);
         }
 
         var rawJson = await response.Content.ReadAsStringAsync();
         return ParseGeminiResponse(rawJson);
     }
+
+    private static string CatNgan(string chuoi) => chuoi.Length <= 300 ? chuoi : chuoi[..300] + "...";
 
     private static DocOdoKetQuaAi ParseGeminiResponse(string rawJson)
     {

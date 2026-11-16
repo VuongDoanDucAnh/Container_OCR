@@ -26,7 +26,7 @@ builder.Services.AddScoped<IGoogleSheetsService, GoogleSheetsService>();
 builder.Services.AddScoped<IJwtService, JwtService>();
 
 string jwtSigningKey = builder.Configuration["Jwt:SigningKey"]
-    ?? "khoa-tam-de-build-khong-loi---HAY-THAY-BANG-USER-SECRETS-THUC-TE";
+    ?? throw new InvalidOperationException("Chưa cấu hình Jwt:SigningKey trong user-secrets");
 
 var xacThuc = builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
     .AddJwtBearer(options =>

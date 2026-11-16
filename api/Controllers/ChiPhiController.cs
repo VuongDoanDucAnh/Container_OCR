@@ -14,13 +14,17 @@ namespace DoAnOlympics.Api.Controllers;
 [Authorize]
 public class ChiPhiController : ControllerBase
 {
+    private const long GioiHanAnhByte = 10 * 1024 * 1024;
+
     private readonly AppDbContext _db;
     private readonly IGeminiHoaDonClient _hoaDonClient;
+    private readonly ILogger<ChiPhiController> _logger;
 
-    public ChiPhiController(AppDbContext db, IGeminiHoaDonClient hoaDonClient)
+    public ChiPhiController(AppDbContext db, IGeminiHoaDonClient hoaDonClient, ILogger<ChiPhiController> logger)
     {
         _db = db;
         _hoaDonClient = hoaDonClient;
+        _logger = logger;
     }
 
     [HttpGet]
@@ -89,6 +93,17 @@ public class ChiPhiController : ControllerBase
             });
         }
 
+        if (anh.Length > GioiHanAnhByte)
+        {
+            return BadRequest(new DocHoaDonResponseDto
+            {
+                ThanhCong = false,
+                Loi = "Ảnh quá lớn",
+                HuongGiaiQuyet = "Vui lòng chụp lại với độ phân giải thấp hơn",
+                MaLoi = "ANH_QUA_LON"
+            });
+        }
+
         using var ms = new MemoryStream();
         await anh.CopyToAsync(ms);
         var anhBytes = ms.ToArray();
@@ -100,11 +115,12 @@ public class ChiPhiController : ControllerBase
         }
         catch (Exception ex)
         {
+            _logger.LogError(ex, "Đọc hóa đơn bằng Gemini thất bại. DriverId={DriverId} KichThuocAnh={KichThuocAnh}", LayDriverId(), anhBytes.Length);
             return StatusCode(503, new DocHoaDonResponseDto
             {
                 ThanhCong = false,
-                Loi = $"Chi tiết lỗi: {ex.Message}",
-                HuongGiaiQuyet = "Kiểm tra API Key hoặc kết nối mạng",
+                Loi = "Hệ thống đọc hóa đơn đang tạm gián đoạn",
+                HuongGiaiQuyet = "Vui lòng thử lại sau ít phút, hoặc nhập tay số liệu từ hóa đơn",
                 MaLoi = "LOI_DICH_VU_AI"
             });
         }
