@@ -1,10 +1,151 @@
 <?xml version="1.0" encoding="utf-8" ?>
 <ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
              xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
-             x:Class="App_OCR.ThongBaoPage">
+             x:Class="App_OCR.ThongBaoPage"
+             BackgroundColor="{StaticResource JadeSoft}">
 
-    <VerticalStackLayout VerticalOptions="Center" HorizontalOptions="Center">
-        <Label Text="Thông báo - Đang phát triển" FontSize="18" />
-    </VerticalStackLayout>
+    <Grid RowDefinitions="*,Auto">
+
+        <CollectionView Grid.Row="0"
+                         x:Name="CvTin"
+                         Margin="10,10,10,4">
+            <CollectionView.EmptyView>
+                <VerticalStackLayout VerticalOptions="Center" Spacing="6">
+                    <Label Text="💬" FontSize="40" HorizontalOptions="Center" />
+                    <Label Text="Chưa có trao đổi nào với quản lý"
+                           FontSize="14"
+                           TextColor="{StaticResource Gray500}"
+                           HorizontalOptions="Center" />
+                </VerticalStackLayout>
+            </CollectionView.EmptyView>
+
+            <CollectionView.ItemTemplate>
+                <DataTemplate>
+                    <Grid Padding="4,6">
+                        <Border StrokeShape="RoundRectangle 14"
+                                Stroke="{StaticResource JadeSoft}"
+                                StrokeThickness="1"
+                                Padding="12,8"
+                                MaximumWidthRequest="280"
+                                BackgroundColor="White">
+                            <Border.Triggers>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsMine}" Value="True">
+                                    <Setter Property="HorizontalOptions" Value="End" />
+                                    <Setter Property="BackgroundColor" Value="{StaticResource JadePrimary}" />
+                                    <Setter Property="Stroke" Value="{StaticResource JadePrimary}" />
+                                </DataTrigger>
+                                <DataTrigger TargetType="Border" Binding="{Binding IsMine}" Value="False">
+                                    <Setter Property="HorizontalOptions" Value="Start" />
+                                </DataTrigger>
+                            </Border.Triggers>
+
+                            <VerticalStackLayout Spacing="4">
+                                <Label Text="{Binding NhanSuCo}"
+                                       IsVisible="{Binding CoSuCo}"
+                                       FontSize="12"
+                                       FontAttributes="Bold"
+                                       TextColor="#FFCDD2" />
+
+                                <Image Source="{Binding AnhSource}"
+                                       IsVisible="{Binding CoAnh}"
+                                       Aspect="AspectFit"
+                                       HeightRequest="160"
+                                       Margin="0,4" />
+
+                                <Label Text="{Binding NoiDung}" FontSize="15">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsMine}" Value="False">
+                                            <Setter Property="TextColor" Value="{StaticResource JadeDark}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+
+                                <Label Text="{Binding GioHienThi}" FontSize="10" Opacity="0.8">
+                                    <Label.Triggers>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsMine}" Value="True">
+                                            <Setter Property="TextColor" Value="White" />
+                                        </DataTrigger>
+                                        <DataTrigger TargetType="Label" Binding="{Binding IsMine}" Value="False">
+                                            <Setter Property="TextColor" Value="{StaticResource Gray500}" />
+                                        </DataTrigger>
+                                    </Label.Triggers>
+                                </Label>
+                            </VerticalStackLayout>
+                        </Border>
+                    </Grid>
+                </DataTemplate>
+            </CollectionView.ItemTemplate>
+        </CollectionView>
+
+        <Border Grid.Row="1"
+                StrokeShape="RoundRectangle 18,18,0,0"
+                Stroke="Transparent"
+                BackgroundColor="{StaticResource JadePrimary}"
+                Padding="14,12,14,16">
+            <VerticalStackLayout Spacing="8">
+
+                <Picker x:Name="PkLoaiSuCo"
+                        Title="Loại sự cố (nếu có)"
+                        TitleColor="{StaticResource JadeSoft}"
+                        TextColor="White"
+                        BackgroundColor="Transparent" />
+
+                <Grid x:Name="GridAnhDinhKem"
+                      IsVisible="False"
+                      ColumnDefinitions="Auto,*"
+                      ColumnSpacing="8">
+                    <Image x:Name="ImgDinhKem"
+                           Grid.Column="0"
+                           WidthRequest="52"
+                           HeightRequest="52"
+                           Aspect="AspectFill" />
+                    <Button Grid.Column="1"
+                            Text="Bỏ ảnh đính kèm"
+                            FontSize="12"
+                            BackgroundColor="Transparent"
+                            TextColor="White"
+                            HorizontalOptions="Start"
+                            Clicked="BtnBoAnh_Clicked" />
+                </Grid>
+
+                <Grid ColumnDefinitions="Auto,*,Auto" ColumnSpacing="10">
+                    <Button x:Name="BtnDinhKemAnh"
+                            Grid.Column="0"
+                            Text="📷"
+                            FontSize="18"
+                            WidthRequest="44"
+                            HeightRequest="44"
+                            CornerRadius="22"
+                            Padding="0"
+                            BackgroundColor="#00584E"
+                            TextColor="White"
+                            Clicked="BtnDinhKemAnh_Clicked" />
+
+                    <Editor x:Name="EdNoiDung"
+                            Grid.Column="1"
+                            Placeholder="Nhập nội dung..."
+                            PlaceholderColor="{StaticResource Gray400}"
+                            AutoSize="TextChanges"
+                            MaxLength="1000"
+                            HeightRequest="44"
+                            BackgroundColor="White" />
+
+                    <Button x:Name="BtnGuiTin"
+                            Grid.Column="2"
+                            Text="Gửi"
+                            WidthRequest="66"
+                            BackgroundColor="White"
+                            TextColor="{StaticResource JadeDark}"
+                            FontAttributes="Bold"
+                            Clicked="BtnGuiTin_Clicked" />
+                </Grid>
+
+            </VerticalStackLayout>
+        </Border>
+
+    </Grid>
 
 </ContentPage>

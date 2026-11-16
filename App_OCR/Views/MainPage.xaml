@@ -32,6 +32,20 @@
             TextColor="White"
             Clicked="BtnLogin_Clicked" />
 
+            <Label
+            Text="hoặc"
+            TextColor="{StaticResource Gray500}"
+            HorizontalOptions="Center" />
+
+            <Button
+            x:Name="BtnGoogle"
+            Text="Đăng nhập bằng Google"
+            BackgroundColor="White"
+            TextColor="{StaticResource JadeDark}"
+            BorderColor="{StaticResource JadePrimary}"
+            BorderWidth="1.5"
+            Clicked="BtnGoogle_Clicked" />
+
             <ActivityIndicator
             x:Name="LoadingLogin"
             IsRunning="False"

@@ -10,6 +10,7 @@ public interface IDriverRepository
     Task<Driver?> TimTheoIdAsync(int id);
     Task<Driver> ThemMoiAsync(Driver driver);
     Task<bool> UsernameDaTonTaiAsync(string username);
+    Task<bool> MaTaiXeDaTonTaiAsync(string maTaiXe);
     Task CapNhatAsync(Driver driver);
 }
 
@@ -34,6 +35,9 @@ public class DriverRepository : IDriverRepository
 
     public Task<bool> UsernameDaTonTaiAsync(string username) =>
         _db.Drivers.AnyAsync(d => d.Username == username);
+
+    public Task<bool> MaTaiXeDaTonTaiAsync(string maTaiXe) =>
+        _db.Drivers.AnyAsync(d => d.MaTaiXe == maTaiXe);
 
     public Task CapNhatAsync(Driver driver)
     {

@@ -6,7 +6,7 @@ namespace App_OCR;
 public partial class CaNhanPage : ContentPage
 {
     private readonly HttpClient _httpClient = new();
-    private const string ApiBaseUrl = "http://10.0.2.2:5232";
+    private const string ApiBaseUrl = ApiCauHinh.DiaChiApi;
 
     public CaNhanPage()
     {
@@ -37,6 +37,10 @@ public partial class CaNhanPage : ContentPage
             {
                 var thongTin = await phanHoi.Content.ReadFromJsonAsync<ThongTinTaiXe>();
                 LblMaTaiXe.Text = $"Mã tài xế: {thongTin?.MaTaiXe}";
+                LblTenHienThi.Text = string.IsNullOrWhiteSpace(thongTin?.HoTen) ? "Tài xế" : thongTin.HoTen;
+                LblChuCaiDau.Text = string.IsNullOrWhiteSpace(thongTin?.HoTen)
+                    ? "TX"
+                    : thongTin.HoTen.Trim()[..1].ToUpperInvariant();
                 EntryHoTen.Text = thongTin?.HoTen;
                 EntrySoDienThoai.Text = thongTin?.SoDienThoai;
             }

@@ -11,12 +11,14 @@ namespace App_OCR
                 .UseMauiApp<App>()
                 .ConfigureFonts(fonts =>
                 {
-                    fonts.AddFont("OpenSans-Regular.ttf", "OpenSansRegular");
-                    fonts.AddFont("OpenSans-Semibold.ttf", "OpenSansSemibold");
+                    fonts.AddFont("BeVietnamPro-Regular.ttf", "BeVietnamRegular");
+                    fonts.AddFont("BeVietnamPro-Medium.ttf", "BeVietnamMedium");
+                    fonts.AddFont("BeVietnamPro-SemiBold.ttf", "BeVietnamSemibold");
+                    fonts.AddFont("BeVietnamPro-Bold.ttf", "BeVietnamBold");
                 });
 
 #if DEBUG
-    		builder.Logging.AddDebug();
+            builder.Logging.AddDebug();
 #endif
 
             return builder.Build();

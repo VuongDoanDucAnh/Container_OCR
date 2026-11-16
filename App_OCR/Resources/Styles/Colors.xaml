@@ -3,34 +3,42 @@
     xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
     xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml">
 
-    <!-- Note: For Android please see also Platforms\Android\Resources\values\colors.xml -->
+    <Color x:Key="Primary">#1D4E89</Color>
+    <Color x:Key="PrimaryDark">#153A66</Color>
+    <Color x:Key="PrimaryMid">#2F6DB5</Color>
+    <Color x:Key="PrimarySoft">#E3EDF9</Color>
+    <Color x:Key="PageBackground">#F5F4F1</Color>
+    <Color x:Key="Surface">#FFFFFF</Color>
 
-    <Color x:Key="JadePrimary">#00695C</Color>
-    <Color x:Key="JadeLight">#4DB6AC</Color>
-    <Color x:Key="JadeSoft">#E0F2F1</Color>
-    <Color x:Key="JadeDark">#004D40</Color>
+    <Color x:Key="StatusWaitText">#8A4B00</Color>
+    <Color x:Key="StatusWaitBg">#FFF1D6</Color>
+    <Color x:Key="StatusRunText">#1D4E89</Color>
+    <Color x:Key="StatusRunBg">#E3EDF9</Color>
+    <Color x:Key="StatusDoneText">#1B6E3C</Color>
+    <Color x:Key="StatusDoneBg">#E3F4E8</Color>
+    <Color x:Key="StatusErrorText">#B3261E</Color>
+    <Color x:Key="StatusErrorBg">#FCE8E6</Color>
 
-    <Color x:Key="Primary">#512BD4</Color>
-    <Color x:Key="PrimaryDark">#ac99ea</Color>
-    <Color x:Key="PrimaryDarkText">#242424</Color>
-    <Color x:Key="Secondary">#DFD8F7</Color>
-    <Color x:Key="SecondaryDarkText">#9880e5</Color>
-    <Color x:Key="Tertiary">#2B0B98</Color>
+    <Color x:Key="JadePrimary">#1D4E89</Color>
+    <Color x:Key="JadeDark">#153A66</Color>
+    <Color x:Key="JadeLight">#2F6DB5</Color>
+    <Color x:Key="JadeSecondary">#2F6DB5</Color>
+    <Color x:Key="JadeSoft">#F5F4F1</Color>
+
+    <Color x:Key="Secondary">#E3EDF9</Color>
+    <Color x:Key="Tertiary">#153A66</Color>
 
     <Color x:Key="White">White</Color>
     <Color x:Key="Black">Black</Color>
-    <Color x:Key="Magenta">#D600AA</Color>
-    <Color x:Key="MidnightBlue">#190649</Color>
-    <Color x:Key="OffBlack">#1f1f1f</Color>
 
-    <Color x:Key="Gray100">#E1E1E1</Color>
-    <Color x:Key="Gray200">#C8C8C8</Color>
-    <Color x:Key="Gray300">#ACACAC</Color>
-    <Color x:Key="Gray400">#919191</Color>
-    <Color x:Key="Gray500">#6E6E6E</Color>
-    <Color x:Key="Gray600">#404040</Color>
-    <Color x:Key="Gray900">#212121</Color>
-    <Color x:Key="Gray950">#141414</Color>
+    <Color x:Key="Gray100">#ECEAE5</Color>
+    <Color x:Key="Gray200">#DDD9D2</Color>
+    <Color x:Key="Gray300">#B9B5AD</Color>
+    <Color x:Key="Gray400">#6A6F76</Color>
+    <Color x:Key="Gray500">#5B6168</Color>
+    <Color x:Key="Gray600">#3B4047</Color>
+    <Color x:Key="Gray900">#1B1F23</Color>
+    <Color x:Key="Gray950">#14171A</Color>
 
     <SolidColorBrush x:Key="JadePrimaryBrush" Color="{StaticResource JadePrimary}"/>
     <SolidColorBrush x:Key="JadeLightBrush" Color="{StaticResource JadeLight}"/>

@@ -1,0 +1,40 @@
+﻿@model GanTaiXeForm
+@{
+    ViewData["Trang"] = "don";
+    ViewData["TieuDe"] = "Gán tài xế";
+    var dsTaiXe = ViewBag.DsTaiXe as List<Driver> ?? new List<Driver>();
+    var loi = ViewBag.Loi as string;
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Gán tài xế cho đơn</h1>
+        <p class="phu">@ViewBag.MaDon · @ViewBag.TenKhachHang</p>
+    </div>
+    <a class="nut-phu" href="/quanly/don-hang">‹ Quay lại danh sách</a>
+</div>
+
+<div class="khung" style="max-width:480px">
+    @if (!string.IsNullOrEmpty(loi))
+    {
+        <p style="color:#c62828;margin-top:0">@loi</p>
+    }
+
+    <form method="post" action="/quanly/don-hang/gan-tai-xe">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="DonHangId" value="@Model.DonHangId" />
+
+        <label class="nho">Tài xế</label>
+        <select name="DriverId" required style="width:100%;padding:9px;margin:6px 0 18px;border:1px solid #b0bec5;border-radius:8px;">
+            <option value="">-- Chọn tài xế --</option>
+            @foreach (var d in dsTaiXe)
+            {
+                @Html.Raw($"<option value=\"{d.Id}\">{d.MaTaiXe} - {d.HoTen}</option>")
+            }
+        </select>
+
+        <button type="submit" class="nut-thoat" style="background:var(--jade);border-color:var(--jade);width:100%;padding:11px;">
+            Gán tài xế
+        </button>
+    </form>
+</div>
