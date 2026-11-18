@@ -1,0 +1,86 @@
+@{
+    Layout = null;
+    var loi = ViewBag.Loi as string;
+    var returnUrl = ViewBag.ReturnUrl as string;
+}
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Đăng nhập quản lý</title>
+    <style>
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: "Segoe UI", Tahoma, sans-serif;
+            background: linear-gradient(135deg, #004D40, #00695C);
+        }
+        .the {
+            width: 100%;
+            max-width: 380px;
+            padding: 32px;
+            background: #fff;
+            border-radius: 14px;
+            box-shadow: 0 12px 32px rgba(0, 0, 0, 0.25);
+        }
+        h1 { margin: 0 0 4px; font-size: 22px; color: #004D40; }
+        p.phu { margin: 0 0 24px; color: #607d8b; font-size: 14px; }
+        label { display: block; margin-bottom: 6px; font-size: 13px; color: #37474f; }
+        input[type=text], input[type=password] {
+            width: 100%;
+            padding: 11px 12px;
+            margin-bottom: 16px;
+            border: 1px solid #b0bec5;
+            border-radius: 8px;
+            font-size: 15px;
+        }
+        input:focus { outline: none; border-color: #00695C; }
+        button {
+            width: 100%;
+            padding: 12px;
+            border: 0;
+            border-radius: 8px;
+            background: #00695C;
+            color: #fff;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        button:hover { background: #004D40; }
+        .loi {
+            margin-bottom: 16px;
+            padding: 10px 12px;
+            border-radius: 8px;
+            background: #ffebee;
+            color: #c62828;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <form method="post" class="the">
+        @Html.AntiForgeryToken()
+        <input type="hidden" name="returnUrl" value="@returnUrl" />
+        <h1>Trang quản lý điều phối</h1>
+        <p class="phu">Dành cho bộ phận quản lý vận tải</p>
+
+        @if (!string.IsNullOrEmpty(loi))
+        {
+            <div class="loi">@loi</div>
+        }
+
+        <label for="tenDangNhap">Tên đăng nhập</label>
+        <input type="text" id="tenDangNhap" name="tenDangNhap" autocomplete="username" required />
+
+        <label for="matKhau">Mật khẩu</label>
+        <input type="password" id="matKhau" name="matKhau" autocomplete="current-password" required />
+
+        <button type="submit">Đăng nhập</button>
+    </form>
+</body>
+</html>

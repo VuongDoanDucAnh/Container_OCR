@@ -1,0 +1,71 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App_OCR.MainPage"
+             BackgroundColor="{StaticResource JadeSoft}">
+
+    <ScrollView>
+        <VerticalStackLayout
+        Padding="30,0"
+        Spacing="15"
+        VerticalOptions="Center">
+
+            <Label
+            Text="Đăng Nhập"
+            FontSize="40"
+            TextColor="{StaticResource JadeDark}"
+            HorizontalOptions="Center" />
+
+            <Entry
+            x:Name="EntryUsername"
+            Placeholder="Username" />
+
+            <Entry
+            x:Name="EntryPassword"
+            Placeholder="Password"
+            IsPassword="True" />
+
+            <Button
+            x:Name="BtnLogin"
+            Text="Đăng nhập"
+            BackgroundColor="{StaticResource JadePrimary}"
+            TextColor="White"
+            Clicked="BtnLogin_Clicked" />
+
+            <Label
+            Text="hoặc"
+            TextColor="{StaticResource Gray500}"
+            HorizontalOptions="Center" />
+
+            <Button
+            x:Name="BtnGoogle"
+            Text="Đăng nhập bằng Google"
+            BackgroundColor="White"
+            TextColor="{StaticResource JadeDark}"
+            BorderColor="{StaticResource JadePrimary}"
+            BorderWidth="1.5"
+            Clicked="BtnGoogle_Clicked" />
+
+            <ActivityIndicator
+            x:Name="LoadingLogin"
+            IsRunning="False"
+            IsVisible="False"
+            Color="{StaticResource JadePrimary}" />
+            <Label Text="Chưa có tài khoản? Đăng ký ngay"
+             TextColor="{StaticResource JadePrimary}"
+                HorizontalOptions="Center" Margin="0,10,0,0">
+                <Label.GestureRecognizers>
+                    <TapGestureRecognizer Tapped="LblDangKy_Tapped" />
+                </Label.GestureRecognizers>
+            </Label>
+
+            <Label
+            x:Name="LblResult"
+            Text=""
+            TextColor="Red"
+            HorizontalOptions="Center" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+
+</ContentPage>

@@ -1,0 +1,107 @@
+﻿@model CanhBaoViewModel
+@using DoAnOlympics.Api.Controllers
+@using DoAnOlympics.Api.Models
+@{
+    ViewData["Trang"] = "ketoan";
+    ViewData["TieuDe"] = "Cảnh báo ODO";
+    var thongBao = TempData["ThongBao"] as string;
+    var loi = TempData["Loi"] as string;
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Cảnh báo ODO và quãng đường</h1>
+        <p class="phu">Chi phí xăng dầu của tài xế còn cảnh báo chưa xử lý sẽ chưa được giải chi.</p>
+    </div>
+    <div>
+        <a class="nut-phu" href="/quanly/ke-toan/chi-phi">‹ Quay lại chi phí</a>
+    </div>
+</div>
+
+<div class="khung">
+    @if (!string.IsNullOrEmpty(thongBao))
+    {
+        <p style="color:#2E7D32;font-weight:600;margin:0 0 12px;">@thongBao</p>
+    }
+    @if (!string.IsNullOrEmpty(loi))
+    {
+        <p style="color:#C62828;font-weight:600;margin:0 0 12px;">@loi</p>
+    }
+
+    <p style="margin:0 0 14px;">
+        @if (Model.TatCa)
+        {
+            <a class="nut-phu" href="/quanly/canh-bao?driverId=@Model.DriverId">Chỉ xem cảnh báo đang mở</a>
+        }
+        else
+        {
+            <a class="nut-phu" href="/quanly/canh-bao?tatCa=true&driverId=@Model.DriverId">Xem cả cảnh báo đã xử lý</a>
+        }
+    </p>
+
+    @if (Model.DanhSach.Count == 0)
+    {
+        <p class="nho">Không có cảnh báo nào.</p>
+    }
+    else
+    {
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Thời gian</th>
+                        <th>Tài xế</th>
+                        <th>Đơn và tuyến</th>
+                        <th>Loại</th>
+                        <th>Nội dung</th>
+                        <th>Giải trình của tài xế</th>
+                        <th>Xử lý</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var c in Model.DanhSach)
+                    {
+                        <tr>
+                            <td>@c.ThoiGianTao.ToLocalTime().ToString("dd/MM/yyyy HH:mm")</td>
+                            <td>@c.MaTaiXe - @c.HoTen</td>
+                            <td>
+                                @c.MaDon
+                                <div class="nho">@c.TenTuyen</div>
+                            </td>
+                            <td>@(c.Loai == LoaiCanhBao.OdoDauLech ? "ODO đầu chuyến lệch" : "Quãng đường lệch")</td>
+                            <td>@c.MoTa</td>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(c.GhiChuTaiXe))
+                                {
+                                    <span class="nho">Chưa giải trình</span>
+                                }
+                                else
+                                {
+                                    @c.GhiChuTaiXe
+                                }
+                            </td>
+                            <td>
+                                @if (c.TrangThai == TrangThaiCanhBao.Mo)
+                                {
+                                    <form method="post" action="/quanly/canh-bao/@c.Id/xu-ly">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="rowVersion" value="@c.RowVersion" />
+                                        <input type="hidden" name="driverId" value="@Model.DriverId" />
+                                        <input type="hidden" name="tatCa" value="@(Model.TatCa ? "true" : "false")" />
+                                        <textarea name="ghiChu" rows="2" maxlength="500" required placeholder="Ghi chú xử lý" style="display:block;width:100%;margin-bottom:6px;padding:6px;"></textarea>
+                                        <button type="submit" class="nut-phu">Đã xử lý</button>
+                                    </form>
+                                }
+                                else
+                                {
+                                    <div>Đã xử lý: @c.GhiChuQuanLy</div>
+                                    <div class="nho">@(c.ThoiGianXuLy?.ToLocalTime().ToString("dd/MM/yyyy HH:mm"))</div>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+    }
+</div>

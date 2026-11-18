@@ -1,0 +1,76 @@
+﻿@model List<Driver>
+@{
+    ViewData["Trang"] = "taixe";
+    ViewData["TieuDe"] = "Email đăng nhập Google";
+    var thongBao = TempData["ThongBao"] as string;
+    var loi = TempData["Loi"] as string;
+}
+
+<div class="tieu-de-trang">
+    <div>
+        <h1>Email đăng nhập Google</h1>
+        <p class="phu">Chỉ tài xế có email được gán ở đây mới đăng nhập được bằng Google</p>
+    </div>
+    <div>
+        <a class="nut-phu" href="/quanly/tai-xe">‹ Quay lại danh sách tài xế</a>
+    </div>
+</div>
+
+<div class="khung">
+    @if (!string.IsNullOrEmpty(thongBao))
+    {
+        <p style="color:#2E7D32;font-weight:600;margin:0 0 12px;">@thongBao</p>
+    }
+    @if (!string.IsNullOrEmpty(loi))
+    {
+        <p style="color:#C62828;font-weight:600;margin:0 0 12px;">@loi</p>
+    }
+
+    @if (Model.Count == 0)
+    {
+        <p class="rong">Chưa có tài xế nào đăng ký.</p>
+    }
+    else
+    {
+        <div class="cuon-ngang">
+            <table class="bang">
+                <thead>
+                    <tr>
+                        <th>Mã tài xế</th>
+                        <th>Họ tên</th>
+                        <th>Email Google</th>
+                        <th>Trạng thái</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @foreach (var t in Model)
+                    {
+                        <tr>
+                            <td><strong>@t.MaTaiXe</strong></td>
+                            <td>@t.HoTen</td>
+                            <td>
+                                <form method="post" action="/quanly/email-tai-xe/cap-nhat/@t.Id" style="display:flex;gap:6px;align-items:center">
+                                    @Html.AntiForgeryToken()
+                                    <input type="email" name="email" value="@t.Email" placeholder="ten@gmail.com"
+                                           style="width:240px;padding:6px;border:1px solid #b0bec5;border-radius:6px;font-size:12px;" />
+                                    <button type="submit" class="nut-phu" style="padding:5px 8px;font-size:11px;">Lưu</button>
+                                </form>
+                            </td>
+                            <td>
+                                @if (string.IsNullOrWhiteSpace(t.Email))
+                                {
+                                    <span class="huy-hieu khong">Chưa gán</span>
+                                }
+                                else
+                                {
+                                    <span class="huy-hieu xong">Đã gán</span>
+                                }
+                            </td>
+                        </tr>
+                    }
+                </tbody>
+            </table>
+        </div>
+        <p class="nho" style="margin-top:10px;">Để trống ô email rồi bấm Lưu để gỡ liên kết Google của tài xế.</p>
+    }
+</div>

@@ -8,6 +8,8 @@ public interface IContainerRecordRepository
 {
     Task<ContainerRecord> ThemMoiAsync(ContainerRecord record);
     Task<List<ContainerRecord>> LayTheoTaiXeAsync(int driverId);
+    Task<ContainerRecord?> TimBanGhiTrungAsync(string maContainer, DateTime tuUtc, DateTime denUtc);
+    Task CapNhatAsync(ContainerRecord record);
 }
 
 public class ContainerRecordRepository : IContainerRecordRepository
@@ -27,4 +29,17 @@ public class ContainerRecordRepository : IContainerRecordRepository
         _db.ContainerRecords.Where(c => c.DriverId == driverId)
             .OrderByDescending(c => c.ThoiGianQuet)
             .ToListAsync();
+
+    public Task<ContainerRecord?> TimBanGhiTrungAsync(string maContainer, DateTime tuUtc, DateTime denUtc) =>
+        _db.ContainerRecords
+            .Where(c => c.MaContainer == maContainer && c.ChecksumHopLe
+                && c.ThoiGianQuet >= tuUtc && c.ThoiGianQuet < denUtc)
+            .OrderByDescending(c => c.ThoiGianQuet)
+            .FirstOrDefaultAsync();
+
+    public Task CapNhatAsync(ContainerRecord record)
+    {
+        _db.ContainerRecords.Update(record);
+        return _db.SaveChangesAsync();
+    }
 }

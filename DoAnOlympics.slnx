@@ -2,4 +2,5 @@
   <Folder Name="/api/">
     <Project Path="api/DoAnOlympics.Api.csproj" />
   </Folder>
+  <Project Path="App_OCR/App_OCR.csproj" />
 </Solution>

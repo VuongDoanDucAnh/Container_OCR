@@ -1,6 +1,7 @@
 ﻿api/bin/
 api/obj/
 api/*.user
+App_OCR/*.user
 
 ocr-worker/__pycache__/
 ocr-worker/*.pyc
@@ -13,6 +14,9 @@ ocr-worker/ket_qua_cache_gemini.json
 keys/
 **/*.json.key
 **/service-account*.json
+
+App_OCR/bin/
+App_OCR/obj/
 
 .vs/
 *.suo

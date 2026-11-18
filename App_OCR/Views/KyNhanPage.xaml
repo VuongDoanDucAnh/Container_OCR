@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8" ?>
+<ContentPage xmlns="http://schemas.microsoft.com/dotnet/2021/maui"
+             xmlns:x="http://schemas.microsoft.com/winfx/2009/xaml"
+             x:Class="App_OCR.KyNhanPage"
+             Title="Ký nhận biên bản e-POD"
+             BackgroundColor="{StaticResource JadeSoft}">
+
+    <ScrollView>
+        <VerticalStackLayout Padding="16" Spacing="14">
+
+
+            <VerticalStackLayout Spacing="4">
+                <Label x:Name="LblMaDon" Text="" FontSize="16" FontAttributes="Bold" TextColor="{StaticResource JadeDark}" />
+                <Label x:Name="LblKhachHang" Text="" FontSize="14" TextColor="{StaticResource Gray500}" />
+                <Label Text="Nhập tên người ký và cho khách hàng ký xác nhận bên dưới" FontSize="12" TextColor="{StaticResource Gray500}" />
+            </VerticalStackLayout>
+
+            <Entry x:Name="TxtNguoiKyTen" Placeholder="Họ tên người nhận hàng / ký tên"
+                   BackgroundColor="White" HeightRequest="48" ClearButtonVisibility="WhileEditing" />
+
+
+            <VerticalStackLayout Spacing="8">
+                <Button x:Name="BtnChupBienBan" Text="📷 Chụp ảnh biên bản / Seal"
+                        BackgroundColor="{StaticResource JadeSecondary}" TextColor="White"
+                        HeightRequest="46" Clicked="BtnChupBienBan_Clicked" />
+                <Image x:Name="ImgBienBan" HeightRequest="150" Aspect="AspectFit" IsVisible="False" BackgroundColor="Black" />
+            </VerticalStackLayout>
+
+            <Label Text="Chữ ký khách hàng:" FontSize="13" FontAttributes="Bold" TextColor="{StaticResource JadeDark}" />
+            <Border StrokeShape="RoundRectangle 12" Stroke="{StaticResource JadePrimary}"
+                    StrokeThickness="1.5" BackgroundColor="White" HeightRequest="200" Padding="0">
+                <GraphicsView x:Name="GvChuKy"
+                              StartInteraction="GvChuKy_StartInteraction"
+                              DragInteraction="GvChuKy_DragInteraction" />
+            </Border>
+
+
+            <Button x:Name="BtnXoaChuKy" Text="Ký lại (Xóa chữ ký)"
+                    BackgroundColor="{StaticResource Gray200}" TextColor="{StaticResource JadeDark}"
+                    HeightRequest="40" Clicked="BtnXoaChuKy_Clicked" />
+
+
+            <Button x:Name="BtnXacNhanHoanThanh" Text="Xác nhận hoàn thành chuyến"
+                    BackgroundColor="{StaticResource JadePrimary}" TextColor="White"
+                    HeightRequest="50" FontAttributes="Bold" Clicked="BtnXacNhanHoanThanh_Clicked" />
+
+            <ActivityIndicator x:Name="LoadingPod" IsRunning="False" IsVisible="False"
+                               Color="{StaticResource JadePrimary}" HeightRequest="40" />
+
+        </VerticalStackLayout>
+    </ScrollView>
+</ContentPage>
